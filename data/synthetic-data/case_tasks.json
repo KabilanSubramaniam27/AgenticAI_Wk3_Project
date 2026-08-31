@@ -1,0 +1,222 @@
+[
+  {
+    "caseTaskId": "TASK1001",
+    "seniorId": "SEN1001",
+    "assignedCaregiverId": "CG1001",
+    "taskType": "schedule_appointment",
+    "relatedEntityId": "APT1001",
+    "dueDate": "2026-08-29",
+    "priority": "low",
+    "status": "pending",
+    "createdDate": "2026-08-27"
+  },
+  {
+    "caseTaskId": "TASK1002",
+    "seniorId": "SEN1002",
+    "assignedCaregiverId": "CG1002",
+    "taskType": "confirm_ride",
+    "relatedEntityId": "RIDE1002",
+    "dueDate": "2026-08-30",
+    "priority": "medium",
+    "status": "in_progress",
+    "createdDate": "2026-08-26"
+  },
+  {
+    "caseTaskId": "TASK1003",
+    "seniorId": "SEN1003",
+    "assignedCaregiverId": "CG1003",
+    "taskType": "refill_medication",
+    "relatedEntityId": "MED1003",
+    "dueDate": "2026-08-31",
+    "priority": "high",
+    "status": "blocked",
+    "createdDate": "2026-08-25"
+  },
+  {
+    "caseTaskId": "TASK1004",
+    "seniorId": "SEN1004",
+    "assignedCaregiverId": "CG1004",
+    "taskType": "submit_benefit_docs",
+    "relatedEntityId": "BEN1004",
+    "dueDate": "2026-09-01",
+    "priority": "urgent",
+    "status": "completed",
+    "createdDate": "2026-08-24"
+  },
+  {
+    "caseTaskId": "TASK1005",
+    "seniorId": "SEN1005",
+    "assignedCaregiverId": "CG1005",
+    "taskType": "meal_service_intake",
+    "relatedEntityId": "MEAL1005",
+    "dueDate": "2026-09-02",
+    "priority": "low",
+    "status": "pending",
+    "createdDate": "2026-08-23"
+  },
+  {
+    "caseTaskId": "TASK1006",
+    "seniorId": "SEN1006",
+    "assignedCaregiverId": "CG1006",
+    "taskType": "home_support_followup",
+    "relatedEntityId": "HOME1006",
+    "dueDate": "2026-09-03",
+    "priority": "medium",
+    "status": "in_progress",
+    "createdDate": "2026-08-22"
+  },
+  {
+    "caseTaskId": "TASK1007",
+    "seniorId": "SEN1007",
+    "assignedCaregiverId": "CG1007",
+    "taskType": "caregiver_followup",
+    "relatedEntityId": "CG1007",
+    "dueDate": "2026-09-04",
+    "priority": "high",
+    "status": "blocked",
+    "createdDate": "2026-08-21"
+  },
+  {
+    "caseTaskId": "TASK1008",
+    "seniorId": "SEN1008",
+    "assignedCaregiverId": "CG1008",
+    "taskType": "social_activity_registration",
+    "relatedEntityId": "ACT1008",
+    "dueDate": "2026-08-29",
+    "priority": "urgent",
+    "status": "completed",
+    "createdDate": "2026-08-20"
+  },
+  {
+    "caseTaskId": "TASK1009",
+    "seniorId": "SEN1009",
+    "assignedCaregiverId": "CG1009",
+    "taskType": "discharge_followup",
+    "relatedEntityId": "DIS1009",
+    "dueDate": "2026-08-30",
+    "priority": "low",
+    "status": "pending",
+    "createdDate": "2026-08-19"
+  },
+  {
+    "caseTaskId": "TASK1010",
+    "seniorId": "SEN1010",
+    "assignedCaregiverId": "CG1010",
+    "taskType": "case_review",
+    "relatedEntityId": "SEN1010",
+    "dueDate": "2026-08-31",
+    "priority": "medium",
+    "status": "in_progress",
+    "createdDate": "2026-08-18"
+  },
+  {
+    "caseTaskId": "TASK1011",
+    "seniorId": "SEN1011",
+    "assignedCaregiverId": "CG1011",
+    "taskType": "schedule_appointment",
+    "relatedEntityId": "APT1011",
+    "dueDate": "2026-09-01",
+    "priority": "high",
+    "status": "blocked",
+    "createdDate": "2026-08-27"
+  },
+  {
+    "caseTaskId": "TASK1012",
+    "seniorId": "SEN1012",
+    "assignedCaregiverId": "CG1012",
+    "taskType": "confirm_ride",
+    "relatedEntityId": "RIDE1012",
+    "dueDate": "2026-09-02",
+    "priority": "urgent",
+    "status": "completed",
+    "createdDate": "2026-08-26"
+  },
+  {
+    "caseTaskId": "TASK1013",
+    "seniorId": "SEN1013",
+    "assignedCaregiverId": "CG1013",
+    "taskType": "refill_medication",
+    "relatedEntityId": "MED1013",
+    "dueDate": "2026-09-03",
+    "priority": "low",
+    "status": "pending",
+    "createdDate": "2026-08-25"
+  },
+  {
+    "caseTaskId": "TASK1014",
+    "seniorId": "SEN1014",
+    "assignedCaregiverId": "CG1014",
+    "taskType": "submit_benefit_docs",
+    "relatedEntityId": "BEN1014",
+    "dueDate": "2026-09-04",
+    "priority": "medium",
+    "status": "in_progress",
+    "createdDate": "2026-08-24"
+  },
+  {
+    "caseTaskId": "TASK1015",
+    "seniorId": "SEN1015",
+    "assignedCaregiverId": "CG1015",
+    "taskType": "meal_service_intake",
+    "relatedEntityId": "MEAL1015",
+    "dueDate": "2026-08-29",
+    "priority": "high",
+    "status": "blocked",
+    "createdDate": "2026-08-23"
+  },
+  {
+    "caseTaskId": "TASK1016",
+    "seniorId": "SEN1016",
+    "assignedCaregiverId": "CG1016",
+    "taskType": "home_support_followup",
+    "relatedEntityId": "HOME1016",
+    "dueDate": "2026-08-30",
+    "priority": "urgent",
+    "status": "completed",
+    "createdDate": "2026-08-22"
+  },
+  {
+    "caseTaskId": "TASK1017",
+    "seniorId": "SEN1017",
+    "assignedCaregiverId": "CG1017",
+    "taskType": "caregiver_followup",
+    "relatedEntityId": "CG1017",
+    "dueDate": "2026-08-31",
+    "priority": "low",
+    "status": "pending",
+    "createdDate": "2026-08-21"
+  },
+  {
+    "caseTaskId": "TASK1018",
+    "seniorId": "SEN1018",
+    "assignedCaregiverId": "CG1018",
+    "taskType": "social_activity_registration",
+    "relatedEntityId": "ACT1018",
+    "dueDate": "2026-09-01",
+    "priority": "medium",
+    "status": "in_progress",
+    "createdDate": "2026-08-20"
+  },
+  {
+    "caseTaskId": "TASK1019",
+    "seniorId": "SEN1019",
+    "assignedCaregiverId": "CG1019",
+    "taskType": "discharge_followup",
+    "relatedEntityId": "DIS1019",
+    "dueDate": "2026-09-02",
+    "priority": "high",
+    "status": "blocked",
+    "createdDate": "2026-08-19"
+  },
+  {
+    "caseTaskId": "TASK1020",
+    "seniorId": "SEN1020",
+    "assignedCaregiverId": "CG1020",
+    "taskType": "case_review",
+    "relatedEntityId": "SEN1020",
+    "dueDate": "2026-09-03",
+    "priority": "urgent",
+    "status": "completed",
+    "createdDate": "2026-08-18"
+  }
+]

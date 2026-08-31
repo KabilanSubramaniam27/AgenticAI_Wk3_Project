@@ -1,0 +1,74 @@
+[
+  {
+    "vehicleId": "VEH1001",
+    "transportationServiceId": "TRN1001",
+    "vehicleType": "sedan",
+    "wheelchairAccessible": false,
+    "ambulatorySeats": 3,
+    "wheelchairPositions": 0,
+    "status": "available"
+  },
+  {
+    "vehicleId": "VEH1002",
+    "transportationServiceId": "TRN1002",
+    "vehicleType": "wheelchair_van",
+    "wheelchairAccessible": true,
+    "ambulatorySeats": 3,
+    "wheelchairPositions": 1,
+    "status": "available"
+  },
+  {
+    "vehicleId": "VEH1003",
+    "transportationServiceId": "TRN1003",
+    "vehicleType": "wheelchair_van",
+    "wheelchairAccessible": true,
+    "ambulatorySeats": 4,
+    "wheelchairPositions": 2,
+    "status": "available"
+  },
+  {
+    "vehicleId": "VEH1004",
+    "transportationServiceId": "TRN1004",
+    "vehicleType": "accessible_minibus",
+    "wheelchairAccessible": true,
+    "ambulatorySeats": 8,
+    "wheelchairPositions": 2,
+    "status": "available"
+  },
+  {
+    "vehicleId": "VEH1005",
+    "transportationServiceId": "TRN1005",
+    "vehicleType": "sedan",
+    "wheelchairAccessible": false,
+    "ambulatorySeats": 3,
+    "wheelchairPositions": 0,
+    "status": "available"
+  },
+  {
+    "vehicleId": "VEH1006",
+    "transportationServiceId": "TRN1006",
+    "vehicleType": "wheelchair_van",
+    "wheelchairAccessible": true,
+    "ambulatorySeats": 3,
+    "wheelchairPositions": 1,
+    "status": "available"
+  },
+  {
+    "vehicleId": "VEH1007",
+    "transportationServiceId": "TRN1007",
+    "vehicleType": "accessible_minibus",
+    "wheelchairAccessible": true,
+    "ambulatorySeats": 8,
+    "wheelchairPositions": 2,
+    "status": "maintenance"
+  },
+  {
+    "vehicleId": "VEH1008",
+    "transportationServiceId": "TRN1008",
+    "vehicleType": "wheelchair_van",
+    "wheelchairAccessible": true,
+    "ambulatorySeats": 4,
+    "wheelchairPositions": 1,
+    "status": "available"
+  }
+]

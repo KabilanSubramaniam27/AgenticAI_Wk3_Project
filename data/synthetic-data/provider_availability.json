@@ -1,0 +1,191 @@
+[
+  {
+    "availabilityId": "AVL1001",
+    "providerId": "PRV1001",
+    "availableDate": "2026-08-31",
+    "availableTime": "09:00",
+    "durationMinutes": 30,
+    "appointmentType": "new_patient",
+    "status": "available"
+  },
+  {
+    "availabilityId": "AVL1002",
+    "providerId": "PRV1002",
+    "availableDate": "2026-09-01",
+    "availableTime": "10:00",
+    "durationMinutes": 45,
+    "appointmentType": "follow_up",
+    "status": "available"
+  },
+  {
+    "availabilityId": "AVL1003",
+    "providerId": "PRV1003",
+    "availableDate": "2026-09-02",
+    "availableTime": "11:30",
+    "durationMinutes": 60,
+    "appointmentType": "new_patient",
+    "status": "available"
+  },
+  {
+    "availabilityId": "AVL1004",
+    "providerId": "PRV1004",
+    "availableDate": "2026-09-03",
+    "availableTime": "13:00",
+    "durationMinutes": 30,
+    "appointmentType": "follow_up",
+    "status": "available"
+  },
+  {
+    "availabilityId": "AVL1005",
+    "providerId": "PRV1005",
+    "availableDate": "2026-09-04",
+    "availableTime": "14:30",
+    "durationMinutes": 45,
+    "appointmentType": "new_patient",
+    "status": "available"
+  },
+  {
+    "availabilityId": "AVL1006",
+    "providerId": "PRV1006",
+    "availableDate": "2026-09-05",
+    "availableTime": "09:00",
+    "durationMinutes": 60,
+    "appointmentType": "follow_up",
+    "status": "held"
+  },
+  {
+    "availabilityId": "AVL1007",
+    "providerId": "PRV1007",
+    "availableDate": "2026-09-06",
+    "availableTime": "10:00",
+    "durationMinutes": 30,
+    "appointmentType": "new_patient",
+    "status": "available"
+  },
+  {
+    "availabilityId": "AVL1008",
+    "providerId": "PRV1008",
+    "availableDate": "2026-09-07",
+    "availableTime": "11:30",
+    "durationMinutes": 45,
+    "appointmentType": "follow_up",
+    "status": "available"
+  },
+  {
+    "availabilityId": "AVL1009",
+    "providerId": "PRV1009",
+    "availableDate": "2026-09-08",
+    "availableTime": "13:00",
+    "durationMinutes": 60,
+    "appointmentType": "new_patient",
+    "status": "held"
+  },
+  {
+    "availabilityId": "AVL1010",
+    "providerId": "PRV1010",
+    "availableDate": "2026-09-09",
+    "availableTime": "14:30",
+    "durationMinutes": 30,
+    "appointmentType": "follow_up",
+    "status": "available"
+  },
+  {
+    "availabilityId": "AVL1011",
+    "providerId": "PRV1011",
+    "availableDate": "2026-09-10",
+    "availableTime": "09:00",
+    "durationMinutes": 45,
+    "appointmentType": "new_patient",
+    "status": "available"
+  },
+  {
+    "availabilityId": "AVL1012",
+    "providerId": "PRV1012",
+    "availableDate": "2026-09-11",
+    "availableTime": "10:00",
+    "durationMinutes": 60,
+    "appointmentType": "follow_up",
+    "status": "held"
+  },
+  {
+    "availabilityId": "AVL1013",
+    "providerId": "PRV1013",
+    "availableDate": "2026-09-12",
+    "availableTime": "11:30",
+    "durationMinutes": 30,
+    "appointmentType": "new_patient",
+    "status": "available"
+  },
+  {
+    "availabilityId": "AVL1014",
+    "providerId": "PRV1014",
+    "availableDate": "2026-09-13",
+    "availableTime": "13:00",
+    "durationMinutes": 45,
+    "appointmentType": "follow_up",
+    "status": "available"
+  },
+  {
+    "availabilityId": "AVL1015",
+    "providerId": "PRV1015",
+    "availableDate": "2026-09-14",
+    "availableTime": "14:30",
+    "durationMinutes": 60,
+    "appointmentType": "new_patient",
+    "status": "held"
+  },
+  {
+    "availabilityId": "AVL1016",
+    "providerId": "PRV1016",
+    "availableDate": "2026-09-15",
+    "availableTime": "09:00",
+    "durationMinutes": 30,
+    "appointmentType": "follow_up",
+    "status": "available"
+  },
+  {
+    "availabilityId": "AVL1017",
+    "providerId": "PRV1017",
+    "availableDate": "2026-09-16",
+    "availableTime": "10:00",
+    "durationMinutes": 45,
+    "appointmentType": "new_patient",
+    "status": "available"
+  },
+  {
+    "availabilityId": "AVL1018",
+    "providerId": "PRV1018",
+    "availableDate": "2026-09-17",
+    "availableTime": "11:30",
+    "durationMinutes": 60,
+    "appointmentType": "follow_up",
+    "status": "held"
+  },
+  {
+    "availabilityId": "AVL1019",
+    "providerId": "PRV1019",
+    "availableDate": "2026-09-18",
+    "availableTime": "13:00",
+    "durationMinutes": 30,
+    "appointmentType": "new_patient",
+    "status": "available"
+  },
+  {
+    "availabilityId": "AVL1020",
+    "providerId": "PRV1020",
+    "availableDate": "2026-09-19",
+    "availableTime": "14:30",
+    "durationMinutes": 45,
+    "appointmentType": "follow_up",
+    "status": "available"
+  },
+  {
+    "availabilityId": "AVL1021",
+    "providerId": "PRV1003",
+    "availableDate": "2026-09-21",
+    "availableTime": "10:30",
+    "durationMinutes": 45,
+    "appointmentType": "new_patient",
+    "status": "booked"
+  }
+]

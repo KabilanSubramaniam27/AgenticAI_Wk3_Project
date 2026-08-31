@@ -1,0 +1,222 @@
+[
+  {
+    "medicationId": "MED1001",
+    "seniorId": "SEN1001",
+    "medicationName": "Lisinopril",
+    "strength": "5 mg",
+    "frequency": "once daily",
+    "prescribingProviderId": "PRV1001",
+    "pharmacyId": "PHM1001",
+    "active": true,
+    "nextRefillDue": "2026-08-29"
+  },
+  {
+    "medicationId": "MED1002",
+    "seniorId": "SEN1002",
+    "medicationName": "Atorvastatin",
+    "strength": "10 mg",
+    "frequency": "twice daily",
+    "prescribingProviderId": "PRV1002",
+    "pharmacyId": "PHM1002",
+    "active": true,
+    "nextRefillDue": "2026-08-30"
+  },
+  {
+    "medicationId": "MED1003",
+    "seniorId": "SEN1003",
+    "medicationName": "Metformin",
+    "strength": "20 mg",
+    "frequency": "as directed",
+    "prescribingProviderId": "PRV1003",
+    "pharmacyId": "PHM1003",
+    "active": true,
+    "nextRefillDue": "2026-08-31"
+  },
+  {
+    "medicationId": "MED1004",
+    "seniorId": "SEN1004",
+    "medicationName": "Amlodipine",
+    "strength": "25 mg",
+    "frequency": "once daily",
+    "prescribingProviderId": "PRV1004",
+    "pharmacyId": "PHM1004",
+    "active": true,
+    "nextRefillDue": "2026-09-01"
+  },
+  {
+    "medicationId": "MED1005",
+    "seniorId": "SEN1005",
+    "medicationName": "Levothyroxine",
+    "strength": "50 mg",
+    "frequency": "twice daily",
+    "prescribingProviderId": "PRV1005",
+    "pharmacyId": "PHM1005",
+    "active": true,
+    "nextRefillDue": "2026-09-02"
+  },
+  {
+    "medicationId": "MED1006",
+    "seniorId": "SEN1006",
+    "medicationName": "Omeprazole",
+    "strength": "5 mg",
+    "frequency": "as directed",
+    "prescribingProviderId": "PRV1006",
+    "pharmacyId": "PHM1001",
+    "active": true,
+    "nextRefillDue": "2026-09-03"
+  },
+  {
+    "medicationId": "MED1007",
+    "seniorId": "SEN1007",
+    "medicationName": "Gabapentin",
+    "strength": "10 mg",
+    "frequency": "once daily",
+    "prescribingProviderId": "PRV1007",
+    "pharmacyId": "PHM1002",
+    "active": true,
+    "nextRefillDue": "2026-09-04"
+  },
+  {
+    "medicationId": "MED1008",
+    "seniorId": "SEN1008",
+    "medicationName": "Losartan",
+    "strength": "20 mg",
+    "frequency": "twice daily",
+    "prescribingProviderId": "PRV1008",
+    "pharmacyId": "PHM1003",
+    "active": true,
+    "nextRefillDue": "2026-09-05"
+  },
+  {
+    "medicationId": "MED1009",
+    "seniorId": "SEN1009",
+    "medicationName": "Furosemide",
+    "strength": "25 mg",
+    "frequency": "as directed",
+    "prescribingProviderId": "PRV1009",
+    "pharmacyId": "PHM1004",
+    "active": true,
+    "nextRefillDue": "2026-09-06"
+  },
+  {
+    "medicationId": "MED1010",
+    "seniorId": "SEN1010",
+    "medicationName": "Clopidogrel",
+    "strength": "50 mg",
+    "frequency": "once daily",
+    "prescribingProviderId": "PRV1010",
+    "pharmacyId": "PHM1005",
+    "active": true,
+    "nextRefillDue": "2026-09-07"
+  },
+  {
+    "medicationId": "MED1011",
+    "seniorId": "SEN1011",
+    "medicationName": "Sertraline",
+    "strength": "5 mg",
+    "frequency": "twice daily",
+    "prescribingProviderId": "PRV1011",
+    "pharmacyId": "PHM1001",
+    "active": true,
+    "nextRefillDue": "2026-08-29"
+  },
+  {
+    "medicationId": "MED1012",
+    "seniorId": "SEN1012",
+    "medicationName": "Albuterol",
+    "strength": "10 mg",
+    "frequency": "as directed",
+    "prescribingProviderId": "PRV1012",
+    "pharmacyId": "PHM1002",
+    "active": true,
+    "nextRefillDue": "2026-08-30"
+  },
+  {
+    "medicationId": "MED1013",
+    "seniorId": "SEN1013",
+    "medicationName": "Warfarin",
+    "strength": "20 mg",
+    "frequency": "once daily",
+    "prescribingProviderId": "PRV1013",
+    "pharmacyId": "PHM1003",
+    "active": true,
+    "nextRefillDue": "2026-08-31"
+  },
+  {
+    "medicationId": "MED1014",
+    "seniorId": "SEN1014",
+    "medicationName": "Metoprolol",
+    "strength": "25 mg",
+    "frequency": "twice daily",
+    "prescribingProviderId": "PRV1014",
+    "pharmacyId": "PHM1004",
+    "active": true,
+    "nextRefillDue": "2026-09-01"
+  },
+  {
+    "medicationId": "MED1015",
+    "seniorId": "SEN1015",
+    "medicationName": "Pantoprazole",
+    "strength": "50 mg",
+    "frequency": "as directed",
+    "prescribingProviderId": "PRV1015",
+    "pharmacyId": "PHM1005",
+    "active": true,
+    "nextRefillDue": "2026-09-02"
+  },
+  {
+    "medicationId": "MED1016",
+    "seniorId": "SEN1016",
+    "medicationName": "Donepezil",
+    "strength": "5 mg",
+    "frequency": "once daily",
+    "prescribingProviderId": "PRV1016",
+    "pharmacyId": "PHM1001",
+    "active": true,
+    "nextRefillDue": "2026-09-03"
+  },
+  {
+    "medicationId": "MED1017",
+    "seniorId": "SEN1017",
+    "medicationName": "Hydrochlorothiazide",
+    "strength": "10 mg",
+    "frequency": "twice daily",
+    "prescribingProviderId": "PRV1017",
+    "pharmacyId": "PHM1002",
+    "active": true,
+    "nextRefillDue": "2026-09-04"
+  },
+  {
+    "medicationId": "MED1018",
+    "seniorId": "SEN1018",
+    "medicationName": "Apixaban",
+    "strength": "20 mg",
+    "frequency": "as directed",
+    "prescribingProviderId": "PRV1018",
+    "pharmacyId": "PHM1003",
+    "active": true,
+    "nextRefillDue": "2026-09-05"
+  },
+  {
+    "medicationId": "MED1019",
+    "seniorId": "SEN1019",
+    "medicationName": "Insulin Glargine",
+    "strength": "25 mg",
+    "frequency": "once daily",
+    "prescribingProviderId": "PRV1019",
+    "pharmacyId": "PHM1004",
+    "active": true,
+    "nextRefillDue": "2026-09-06"
+  },
+  {
+    "medicationId": "MED1020",
+    "seniorId": "SEN1020",
+    "medicationName": "Duloxetine",
+    "strength": "50 mg",
+    "frequency": "twice daily",
+    "prescribingProviderId": "PRV1020",
+    "pharmacyId": "PHM1005",
+    "active": true,
+    "nextRefillDue": "2026-09-07"
+  }
+]

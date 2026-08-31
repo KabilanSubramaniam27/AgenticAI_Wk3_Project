@@ -1,0 +1,8 @@
+services:
+  vectorai:
+    image: actian/vectorai:latest
+    container_name: seniorcare-vectorai
+    ports: ["6573:6573", "6574:6574", "6575:6575"]
+    volumes: ["./local_data:/var/lib/actian-vectorai"]
+    environment:
+      ACTIAN_VECTORAI_ACCEPT_EULA: "YES"

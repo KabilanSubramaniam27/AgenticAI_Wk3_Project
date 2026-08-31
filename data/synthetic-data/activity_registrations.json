@@ -1,0 +1,20 @@
+[
+  {
+    "registrationId": "REG1001",
+    "seniorId": "SEN1001",
+    "recipientId": "SEN1001",
+    "activityId": "ACT1001",
+    "registeredAt": "2026-08-22T10:00:00+00:00",
+    "status": "registered",
+    "simulation": true
+  },
+  {
+    "registrationId": "REG1002",
+    "seniorId": "SEN1002",
+    "recipientId": "SEN1002",
+    "activityId": "ACT1002",
+    "registeredAt": "2026-08-23T11:00:00+00:00",
+    "status": "registered",
+    "simulation": true
+  }
+]

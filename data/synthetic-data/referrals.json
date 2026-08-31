@@ -1,0 +1,222 @@
+[
+  {
+    "referralId": "REF1001",
+    "seniorId": "SEN1001",
+    "referringProviderId": "PRV1002",
+    "referredProviderId": "PRV1001",
+    "specialty": "Primary Care",
+    "referralDate": "2026-08-18",
+    "status": "received",
+    "appointmentId": "APT1001",
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1002",
+    "seniorId": "SEN1002",
+    "referringProviderId": "PRV1003",
+    "referredProviderId": "PRV1002",
+    "specialty": "Cardiology",
+    "referralDate": "2026-08-19",
+    "status": "scheduled",
+    "appointmentId": "APT1002",
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1003",
+    "seniorId": "SEN1003",
+    "referringProviderId": "PRV1004",
+    "referredProviderId": "PRV1003",
+    "specialty": "Orthopedics",
+    "referralDate": "2026-08-20",
+    "status": "pending",
+    "appointmentId": null,
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1004",
+    "seniorId": "SEN1004",
+    "referringProviderId": "PRV1005",
+    "referredProviderId": "PRV1004",
+    "specialty": "Neurology",
+    "referralDate": "2026-08-21",
+    "status": "completed",
+    "appointmentId": "APT1004",
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1005",
+    "seniorId": "SEN1005",
+    "referringProviderId": "PRV1006",
+    "referredProviderId": "PRV1005",
+    "specialty": "Ophthalmology",
+    "referralDate": "2026-08-22",
+    "status": "received",
+    "appointmentId": "APT1005",
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1006",
+    "seniorId": "SEN1006",
+    "referringProviderId": "PRV1007",
+    "referredProviderId": "PRV1006",
+    "specialty": "Endocrinology",
+    "referralDate": "2026-08-18",
+    "status": "scheduled",
+    "appointmentId": "APT1006",
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1007",
+    "seniorId": "SEN1007",
+    "referringProviderId": "PRV1008",
+    "referredProviderId": "PRV1007",
+    "specialty": "Pulmonology",
+    "referralDate": "2026-08-19",
+    "status": "pending",
+    "appointmentId": null,
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1008",
+    "seniorId": "SEN1008",
+    "referringProviderId": "PRV1009",
+    "referredProviderId": "PRV1008",
+    "specialty": "Gastroenterology",
+    "referralDate": "2026-08-20",
+    "status": "completed",
+    "appointmentId": "APT1008",
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1009",
+    "seniorId": "SEN1009",
+    "referringProviderId": "PRV1010",
+    "referredProviderId": "PRV1009",
+    "specialty": "Rheumatology",
+    "referralDate": "2026-08-21",
+    "status": "received",
+    "appointmentId": "APT1009",
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1010",
+    "seniorId": "SEN1010",
+    "referringProviderId": "PRV1011",
+    "referredProviderId": "PRV1010",
+    "specialty": "Urology",
+    "referralDate": "2026-08-22",
+    "status": "scheduled",
+    "appointmentId": "APT1010",
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1011",
+    "seniorId": "SEN1011",
+    "referringProviderId": "PRV1012",
+    "referredProviderId": "PRV1011",
+    "specialty": "Primary Care",
+    "referralDate": "2026-08-18",
+    "status": "pending",
+    "appointmentId": null,
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1012",
+    "seniorId": "SEN1012",
+    "referringProviderId": "PRV1013",
+    "referredProviderId": "PRV1012",
+    "specialty": "Cardiology",
+    "referralDate": "2026-08-19",
+    "status": "completed",
+    "appointmentId": "APT1012",
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1013",
+    "seniorId": "SEN1013",
+    "referringProviderId": "PRV1014",
+    "referredProviderId": "PRV1013",
+    "specialty": "Orthopedics",
+    "referralDate": "2026-08-20",
+    "status": "received",
+    "appointmentId": "APT1013",
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1014",
+    "seniorId": "SEN1014",
+    "referringProviderId": "PRV1015",
+    "referredProviderId": "PRV1014",
+    "specialty": "Neurology",
+    "referralDate": "2026-08-21",
+    "status": "scheduled",
+    "appointmentId": "APT1014",
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1015",
+    "seniorId": "SEN1015",
+    "referringProviderId": "PRV1016",
+    "referredProviderId": "PRV1015",
+    "specialty": "Ophthalmology",
+    "referralDate": "2026-08-22",
+    "status": "pending",
+    "appointmentId": null,
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1016",
+    "seniorId": "SEN1016",
+    "referringProviderId": "PRV1017",
+    "referredProviderId": "PRV1016",
+    "specialty": "Endocrinology",
+    "referralDate": "2026-08-18",
+    "status": "completed",
+    "appointmentId": "APT1016",
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1017",
+    "seniorId": "SEN1017",
+    "referringProviderId": "PRV1018",
+    "referredProviderId": "PRV1017",
+    "specialty": "Pulmonology",
+    "referralDate": "2026-08-19",
+    "status": "received",
+    "appointmentId": "APT1017",
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1018",
+    "seniorId": "SEN1018",
+    "referringProviderId": "PRV1019",
+    "referredProviderId": "PRV1018",
+    "specialty": "Gastroenterology",
+    "referralDate": "2026-08-20",
+    "status": "scheduled",
+    "appointmentId": "APT1018",
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1019",
+    "seniorId": "SEN1019",
+    "referringProviderId": "PRV1020",
+    "referredProviderId": "PRV1019",
+    "specialty": "Rheumatology",
+    "referralDate": "2026-08-21",
+    "status": "pending",
+    "appointmentId": null,
+    "notes": "Synthetic referral for care coordination demo."
+  },
+  {
+    "referralId": "REF1020",
+    "seniorId": "SEN1020",
+    "referringProviderId": "PRV1001",
+    "referredProviderId": "PRV1020",
+    "specialty": "Urology",
+    "referralDate": "2026-08-22",
+    "status": "completed",
+    "appointmentId": "APT1020",
+    "notes": "Synthetic referral for care coordination demo."
+  }
+]

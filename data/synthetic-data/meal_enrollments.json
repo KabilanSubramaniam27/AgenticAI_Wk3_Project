@@ -1,0 +1,20 @@
+[
+  {
+    "mealEnrollmentId": "MENR1001",
+    "seniorId": "SEN1001",
+    "recipientId": "SEN1001",
+    "mealServiceId": "MEAL1001",
+    "enrollmentDate": "2026-08-20",
+    "status": "active",
+    "simulation": true
+  },
+  {
+    "mealEnrollmentId": "MENR1002",
+    "seniorId": "SEN1002",
+    "recipientId": "SEN1002",
+    "mealServiceId": "MEAL1002",
+    "enrollmentDate": "2026-08-21",
+    "status": "pending",
+    "simulation": true
+  }
+]

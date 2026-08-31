@@ -1,0 +1,384 @@
+allowed_domains:
+  - data.cms.gov
+  - cms.gov
+  - medicare.gov
+  - dmas.virginia.gov
+  - dars.virginia.gov
+  - easyaccess.virginia.gov
+  - commonhelp.virginia.gov
+  - ridegrtc.com
+  - api.fda.gov
+  - fda.gov
+  - rva.gov
+  - henrico.gov
+  - chesterfield.gov
+  - hanovercounty.gov
+sources:
+  - source_id: cms_doctors
+    source_name: CMS Doctors and Clinicians
+    organization: Centers for Medicare & Medicaid Services
+    category: healthcare_access
+    authority_level: federal
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: api
+      api:
+        url: https://data.cms.gov/provider-data/api/1/datastore/query/mj5m-pzi6/0
+        format: json
+        page_size: 500
+        params:
+          conditions[0][property]: state
+          conditions[0][value]: VA
+          conditions[0][operator]: "="
+    geography: {country: US, state: Virginia}
+    tags: [provider, medicare]
+  - source_id: medicare_care_compare_guidance
+    source_name: Medicare Care Compare Guidance
+    organization: Centers for Medicare & Medicaid Services
+    category: healthcare_access
+    subcategory: provider_search
+    authority_level: federal
+    source_trust_tier: 1
+    enabled: false
+    acquisition:
+      preferred_method: html
+      html: {url: https://www.medicare.gov/care-compare/}
+    geography: {country: US}
+    tags: [healthcare_access, provider_search, medicare]
+  - source_id: medicare_provider_services
+    source_name: Medicare Doctor and Health Care Provider Services
+    organization: Centers for Medicare & Medicaid Services
+    category: healthcare_access
+    subcategory: provider_coverage
+    authority_level: federal
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://www.medicare.gov/coverage/doctor-other-health-care-provider-services}
+    geography: {country: US}
+    tags: [healthcare_access, provider_coverage, medicare]
+  - source_id: medicare_telehealth_guidance
+    source_name: Medicare Telehealth Guidance
+    organization: Centers for Medicare & Medicaid Services
+    category: healthcare_access
+    subcategory: telehealth
+    authority_level: federal
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://www.medicare.gov/coverage/telehealth}
+    geography: {country: US}
+    tags: [healthcare_access, telehealth, medicare]
+  - source_id: virginia_dmas_transportation
+    source_name: Virginia DMAS Transportation Services
+    organization: Virginia Department of Medical Assistance Services
+    category: transportation
+    subcategory: medical_transportation
+    authority_level: state
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://www.dmas.virginia.gov/for-members/benefits-and-services/transportation-services/}
+    geography: {country: US, state: Virginia}
+    tags: [senior, transportation]
+  - source_id: virginia_dars_aging
+    source_name: Virginia DARS Aging Programs
+    organization: Virginia Department for Aging and Rehabilitative Services
+    category: caregiver_support
+    authority_level: state
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://www.dars.virginia.gov/divisions/aging/}
+    geography: {country: US, state: Virginia}
+    tags: [aging, caregiver]
+  - source_id: medicare_extra_help
+    source_name: Medicare Extra Help
+    organization: Centers for Medicare & Medicaid Services
+    category: benefits_financial
+    subcategory: prescription_cost_assistance
+    authority_level: federal
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://www.medicare.gov/basics/costs/help/drug-costs}
+    geography: {country: US}
+    tags: [medicare, benefits]
+  - source_id: virginia_commonhelp_food
+    source_name: Virginia CommonHelp Food Assistance
+    organization: Virginia Department of Social Services
+    category: food_meals
+    subcategory: snap
+    authority_level: state
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: "https://commonhelp.virginia.gov/access/accessController?id=0.06294657524455793"}
+    geography: {country: US, state: Virginia}
+    tags: [food, benefits]
+  - source_id: grtc_care_paratransit
+    source_name: GRTC CARE Paratransit
+    organization: Greater Richmond Transit Company
+    category: transportation
+    subcategory: paratransit
+    authority_level: public_transit
+    source_trust_tier: 2
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://www.ridegrtc.com/grtc-services/care-paratransit/}
+    geography: {country: US, state: Virginia}
+    tags: [senior, disability, wheelchair, paratransit, Richmond City, Henrico County, Chesterfield County]
+  - source_id: virginia_easy_access_aging
+    source_name: Virginia Easy Access Aging Services
+    organization: Virginia No Wrong Door
+    category: caregiver_support
+    subcategory: aging_services
+    authority_level: state
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://easyaccess.virginia.gov/aging}
+    geography: {country: US, state: Virginia}
+    tags: [senior, caregiver, respite, meals]
+  - source_id: virginia_easy_access_food
+    source_name: Virginia Easy Access Food and Nutrition
+    organization: Virginia No Wrong Door
+    category: food_meals
+    subcategory: nutrition_assistance
+    authority_level: state
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://easyaccess.virginia.gov/food}
+    geography: {country: US, state: Virginia}
+    tags: [senior, home_delivered_meals, congregate_meals, SNAP]
+  - source_id: virginia_easy_access_service_finder
+    source_name: Virginia Easy Access Service Finder
+    organization: Virginia No Wrong Door
+    category: home_support
+    subcategory: community_resource_navigation
+    authority_level: state
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://easyaccess.virginia.gov/service-finder}
+    geography: {country: US, state: Virginia}
+    tags: [housing, in_home_services, transportation, accessibility]
+  - source_id: virginia_easy_access_independent_living
+    source_name: Virginia Easy Access Independent Living
+    organization: Virginia No Wrong Door
+    category: home_support
+    subcategory: independent_living
+    authority_level: state
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://easyaccess.virginia.gov/living}
+    geography: {country: US, state: Virginia}
+    tags: [disability, independent_living, accessibility]
+  - source_id: virginia_easy_access_safety
+    source_name: Virginia Easy Access Safety Connector
+    organization: Virginia No Wrong Door
+    category: home_support
+    subcategory: safety_resources
+    authority_level: state
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://easyaccess.virginia.gov/safety}
+    geography: {country: US, state: Virginia}
+    tags: [senior, safety, in_home_services, caregiver]
+  - source_id: virginia_easy_access_social
+    source_name: Virginia Easy Access Social Connectedness
+    organization: Virginia No Wrong Door
+    category: social_wellbeing
+    subcategory: social_connection
+    authority_level: state
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://easyaccess.virginia.gov/social-connectedness}
+    geography: {country: US, state: Virginia}
+    tags: [senior, social_connection, volunteering, classes]
+  - source_id: virginia_dars_aaa_directory
+    source_name: Virginia Area Agencies on Aging Directory
+    organization: Virginia Department for Aging and Rehabilitative Services
+    category: caregiver_support
+    subcategory: area_agency_on_aging
+    authority_level: state
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://dars.virginia.gov/aging/home-community/find-local-aaa/}
+    geography: {country: US, state: Virginia}
+    tags: [senior, caregiver, Richmond City, Henrico County, Chesterfield County, Hanover County]
+  - source_id: medicare_savings_programs
+    source_name: Medicare Savings Programs
+    organization: Centers for Medicare & Medicaid Services
+    category: benefits_financial
+    subcategory: medicare_savings_programs
+    authority_level: federal
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://www.medicare.gov/basics/costs/help/medicare-savings-programs}
+    geography: {country: US}
+    tags: [medicare, benefits, low_income]
+  - source_id: medicare_discharge_checklist
+    source_name: Medicare Discharge Planning Checklist
+    organization: Centers for Medicare & Medicaid Services
+    category: discharge_support
+    subcategory: discharge_planning
+    authority_level: federal
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: pdf
+      pdf: {url: https://www.medicare.gov/publications/11376-your-discharge-planning-checklist.pdf}
+    geography: {country: US}
+    tags: [medicare, discharge, caregiver, follow_up]
+  - source_id: medicare_home_health
+    source_name: Medicare Home Health Services
+    organization: Centers for Medicare & Medicaid Services
+    category: discharge_support
+    subcategory: home_health
+    authority_level: federal
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://www.medicare.gov/coverage/home-health-services}
+    geography: {country: US}
+    tags: [medicare, home_health, discharge, durable_medical_equipment]
+  - source_id: openfda_ndc
+    source_name: openFDA National Drug Code Directory
+    organization: U.S. Food and Drug Administration
+    category: medication_reference
+    subcategory: ndc_directory
+    authority_level: federal
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: api
+      api:
+        url: https://api.fda.gov/drug/ndc.json
+        format: json
+        page_size: 100
+        max_records: 100
+        offset_parameter: skip
+    geography: {country: US}
+    tags: [medication_reference, ndc]
+  - source_id: fda_medication_safety_older_adults
+    source_name: FDA Medication Safety Tips for Older Adults
+    organization: U.S. Food and Drug Administration
+    category: medication_reference
+    subcategory: medication_safety
+    authority_level: federal
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://www.fda.gov/consumers/consumer-updates/5-medication-safety-tips-older-adults}
+    geography: {country: US}
+    tags: [medication_reference, senior, medication_safety]
+  - source_id: fda_unused_medicine_disposal
+    source_name: FDA Disposal of Unused Medicines Guidance
+    organization: U.S. Food and Drug Administration
+    category: medication_reference
+    subcategory: medication_disposal
+    authority_level: federal
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://www.fda.gov/drugs/safe-disposal-medicines/disposal-unused-medicines-what-you-should-know}
+    geography: {country: US}
+    tags: [medication_reference, medication_safety, disposal]
+  - source_id: openfda_mvp_medications
+    source_name: openFDA Medication References for MVP Inventory
+    organization: U.S. Food and Drug Administration
+    category: medication_reference
+    subcategory: ndc_directory
+    authority_level: federal
+    source_trust_tier: 1
+    enabled: true
+    acquisition:
+      preferred_method: api
+      api:
+        url: https://api.fda.gov/drug/ndc.json
+        format: json
+        page_size: 100
+        max_records: 1000
+        offset_parameter: skip
+        params:
+          search: "generic_name:(LISINOPRIL OR ATORVASTATIN OR METFORMIN OR AMLODIPINE OR LEVOTHYROXINE OR OMEPRAZOLE OR GABAPENTIN OR LOSARTAN OR FUROSEMIDE OR CLOPIDOGREL OR SERTRALINE OR ALBUTEROL OR WARFARIN OR METOPROLOL OR PANTOPRAZOLE OR DONEPEZIL OR HYDROCHLOROTHIAZIDE OR APIXABAN OR INSULIN GLARGINE OR DULOXETINE)"
+    geography: {country: US}
+    tags: [medication_reference, ndc, mvp_inventory]
+  - source_id: richmond_active_adults
+    source_name: Richmond Active Adults Recreation
+    organization: City of Richmond Parks and Recreation
+    category: social_wellbeing
+    subcategory: senior_activities
+    authority_level: local_government
+    source_trust_tier: 2
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://www.rva.gov/parks-recreation/recreation}
+    geography: {country: US, state: Virginia}
+    tags: [senior, Richmond City, active_adults, senior_centers, fitness]
+  - source_id: henrico_older_adult_services
+    source_name: Henrico Older Adult Services
+    organization: Henrico County
+    category: social_wellbeing
+    subcategory: senior_activities
+    authority_level: local_government
+    source_trust_tier: 2
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://henrico.gov/outreach/older-adult-services/}
+    geography: {country: US, state: Virginia}
+    tags: [senior, Henrico County, activities, safety, assistance]
+  - source_id: chesterfield_active_lifestyles
+    source_name: Chesterfield Active Lifestyles
+    organization: Chesterfield County Parks and Recreation
+    category: social_wellbeing
+    subcategory: senior_activities
+    authority_level: local_government
+    source_trust_tier: 2
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://www.chesterfield.gov/ActiveLifestyles}
+    geography: {country: US, state: Virginia}
+    tags: [senior, Chesterfield County, age_50_plus, activities, fitness]
+  - source_id: hanover_senior_services
+    source_name: Hanover County Services for Seniors
+    organization: Hanover County
+    category: social_wellbeing
+    subcategory: senior_activities
+    authority_level: local_government
+    source_trust_tier: 2
+    enabled: true
+    acquisition:
+      preferred_method: html
+      html: {url: https://www.hanovercounty.gov/919/Services-for-Seniors}
+    geography: {country: US, state: Virginia}
+    tags: [senior, Hanover County, activities, transportation, safety]

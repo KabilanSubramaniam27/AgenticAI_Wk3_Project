@@ -1,0 +1,19 @@
+chunking:
+  target_tokens: 900
+  overlap_tokens: 120
+  min_tokens: 50
+geography:
+  country: US
+  state: Virginia
+  counties: [Richmond City, Henrico County, Chesterfield County, Hanover County]
+trust_tiers: [1, 2, 3]
+vector_categories:
+  - healthcare_access
+  - transportation
+  - medication_reference
+  - discharge_support
+  - food_meals
+  - benefits_financial
+  - social_wellbeing
+  - home_support
+  - caregiver_support

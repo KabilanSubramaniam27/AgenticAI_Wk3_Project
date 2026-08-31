@@ -1,0 +1,228 @@
+[
+  {
+    "seniorId": "SEN1022",
+    "requestedByUserId": "SEN1022",
+    "recipientId": "SEN1022",
+    "careRecipient": {
+      "recipientId": "SEN1022",
+      "firstName": "Subramaniam",
+      "lastName": "Velusamy",
+      "age": 65,
+      "relationshipToAccountHolder": "father",
+      "isAccountHolder": false
+    },
+    "caseType": "multi_domain_coordination",
+    "title": "SeniorCare coordination request",
+    "description": "Hey i want to book doctor appointment for knee pain for Subramaniam Velusamy — father?",
+    "status": "cancelled",
+    "priority": "medium",
+    "relatedEntityIds": [],
+    "assignedCaregiverId": null,
+    "openedAt": "2026-08-31T02:05:14.103959+00:00",
+    "updatedAt": "2026-08-31T03:06:38.201498+00:00",
+    "targetDate": null,
+    "closedAt": "2026-08-31T03:06:38.201498+00:00",
+    "latestStatusNote": "Cancelled by the member in the dashboard",
+    "simulation": true,
+    "caseId": "CASE1001"
+  },
+  {
+    "seniorId": "SEN1022",
+    "requestedByUserId": "SEN1022",
+    "recipientId": "SEN1022",
+    "careRecipient": {
+      "recipientId": "SEN1022",
+      "firstName": "Subramaniam",
+      "lastName": "Velusamy",
+      "age": 65,
+      "relationshipToAccountHolder": "father",
+      "isAccountHolder": false
+    },
+    "caseType": "multi_domain_coordination",
+    "title": "SeniorCare coordination request",
+    "description": "Hey i want to book doctor appointment for knee pain for my father?",
+    "status": "cancelled",
+    "priority": "medium",
+    "relatedEntityIds": [],
+    "assignedCaregiverId": null,
+    "openedAt": "2026-08-31T02:18:37.754106+00:00",
+    "updatedAt": "2026-08-31T03:06:48.373008+00:00",
+    "targetDate": null,
+    "closedAt": "2026-08-31T03:06:48.373008+00:00",
+    "latestStatusNote": "Cancelled by the member in the dashboard",
+    "simulation": true,
+    "caseId": "CASE1002"
+  },
+  {
+    "seniorId": "SEN1022",
+    "requestedByUserId": "SEN1022",
+    "recipientId": "SEN1022",
+    "careRecipient": {
+      "recipientId": "SEN1022",
+      "firstName": "Subramaniam",
+      "lastName": "Velusamy",
+      "age": 65,
+      "relationshipToAccountHolder": "father",
+      "isAccountHolder": false
+    },
+    "caseType": "care_coordination",
+    "title": "SeniorCare coordination request",
+    "description": "Simulated appointment booking for knee pain.",
+    "status": "cancelled",
+    "priority": "medium",
+    "relatedEntityIds": [],
+    "assignedCaregiverId": null,
+    "openedAt": "2026-08-31T02:28:57.041037+00:00",
+    "updatedAt": "2026-08-31T03:06:41.114440+00:00",
+    "targetDate": null,
+    "closedAt": "2026-08-31T03:06:41.114440+00:00",
+    "latestStatusNote": "Cancelled by the member in the dashboard",
+    "simulation": true,
+    "caseId": "CASE1003"
+  },
+  {
+    "seniorId": "SEN1022",
+    "requestedByUserId": "SEN1022",
+    "recipientId": "SEN1022",
+    "careRecipient": {
+      "recipientId": "SEN1022",
+      "firstName": "Subramaniam",
+      "lastName": "Velusamy",
+      "age": 65,
+      "relationshipToAccountHolder": "father",
+      "isAccountHolder": false
+    },
+    "caseType": "care_coordination",
+    "title": "SeniorCare coordination request",
+    "description": "Simulated appointment for Subramaniam Velusamy with Dr. Morris (Orthopedics) at Central Virginia Orthopedics Center, Midlothian, VA, 23113 on 2026-09-12 at 11:30 for Knee pain consultation.",
+    "status": "cancelled",
+    "priority": "medium",
+    "relatedEntityIds": [
+      "APT1021"
+    ],
+    "assignedCaregiverId": null,
+    "openedAt": "2026-08-31T03:13:29.129972+00:00",
+    "updatedAt": "2026-08-31T04:05:51.592136+00:00",
+    "targetDate": null,
+    "closedAt": "2026-08-31T04:05:51.592136+00:00",
+    "latestStatusNote": "Cancelled by the member in the dashboard",
+    "simulation": true,
+    "caseId": "CASE1004"
+  },
+  {
+    "seniorId": "SEN1022",
+    "requestedByUserId": "SEN1022",
+    "recipientId": "SEN1022",
+    "careRecipient": {
+      "recipientId": "SEN1022",
+      "firstName": "Subramaniam",
+      "lastName": "Velusamy",
+      "age": 65,
+      "relationshipToAccountHolder": "father",
+      "isAccountHolder": false
+    },
+    "caseType": "care_coordination",
+    "title": "SeniorCare coordination request",
+    "description": "Simulated appointment for Subramaniam Velusamy with Dr. Carter (Orthopedics) at Central Virginia Orthopedics Center, Henrico, VA, 23229 on 2026-09-21 at 10:30 for Knee pain consultation..",
+    "status": "cancelled",
+    "priority": "medium",
+    "relatedEntityIds": [
+      "APT1022"
+    ],
+    "assignedCaregiverId": null,
+    "openedAt": "2026-08-31T14:23:01.785166+00:00",
+    "updatedAt": "2026-08-31T17:14:54.120932+00:00",
+    "targetDate": null,
+    "closedAt": "2026-08-31T17:14:54.120932+00:00",
+    "latestStatusNote": "Cancelled by the member in the dashboard",
+    "simulation": true,
+    "caseId": "CASE1005"
+  },
+  {
+    "seniorId": "SEN1022",
+    "requestedByUserId": "SEN1022",
+    "recipientId": "SEN1022",
+    "careRecipient": {
+      "recipientId": "SEN1022",
+      "firstName": "Subramaniam",
+      "lastName": "Velusamy",
+      "age": 65,
+      "relationshipToAccountHolder": "father",
+      "isAccountHolder": false
+    },
+    "caseType": "care_coordination",
+    "title": "SeniorCare coordination request",
+    "description": "Round-Trip transportation for Subramaniam Velusamy with CareVan Transit 2, pickup from 7743 Halifax Drive, Mechanicsville, VA - 23116 on 2026-09-21 at 09:52 for appointment APT1022 at 10:30 at Central Virginia Orthopedics Center, 1003 Care Way, Henrico, VA, 23229; vehicle VEH1002; estimated travel time 23 minutes; wheelchair required: True; accommodation: wheelchair.",
+    "status": "cancelled",
+    "priority": "medium",
+    "relatedEntityIds": [
+      "RIDE1021"
+    ],
+    "assignedCaregiverId": null,
+    "openedAt": "2026-08-31T15:43:58.571006+00:00",
+    "updatedAt": "2026-08-31T17:14:51.585745+00:00",
+    "targetDate": null,
+    "closedAt": "2026-08-31T17:14:51.585745+00:00",
+    "latestStatusNote": "Cancelled by the member in the dashboard",
+    "simulation": true,
+    "caseId": "CASE1006"
+  },
+  {
+    "seniorId": "SEN1022",
+    "requestedByUserId": "SEN1022",
+    "recipientId": "SEN1022",
+    "careRecipient": {
+      "recipientId": "SEN1022",
+      "firstName": "Subramaniam",
+      "lastName": "Velusamy",
+      "age": 65,
+      "relationshipToAccountHolder": "father",
+      "isAccountHolder": false
+    },
+    "caseType": "care_coordination",
+    "title": "SeniorCare coordination request",
+    "description": "Appointment for Subramaniam Velusamy with Dr. Carter (Orthopedics) at Central Virginia Orthopedics Center, Henrico, VA, 23229 on 2026-09-21 at 10:30 for Knee pain consultation.",
+    "status": "open",
+    "priority": "medium",
+    "relatedEntityIds": [
+      "APT1023"
+    ],
+    "assignedCaregiverId": null,
+    "openedAt": "2026-08-31T19:34:05.712789+00:00",
+    "updatedAt": "2026-08-31T19:34:05.750534+00:00",
+    "targetDate": null,
+    "closedAt": null,
+    "latestStatusNote": "Case submitted",
+    "simulation": true,
+    "caseId": "CASE1007"
+  },
+  {
+    "seniorId": "SEN1022",
+    "requestedByUserId": "SEN1022",
+    "recipientId": "SEN1022",
+    "careRecipient": {
+      "recipientId": "SEN1022",
+      "firstName": "Subramaniam",
+      "lastName": "Velusamy",
+      "age": 65,
+      "relationshipToAccountHolder": "father",
+      "isAccountHolder": false
+    },
+    "caseType": "care_coordination",
+    "title": "SeniorCare coordination request",
+    "description": "Round-Trip transportation for Subramaniam Velusamy with CareVan Transit 2, pickup from 7743 Halifax drive, Mechanicsville, VA - 23116 on 2026-09-21 at 09:52 for appointment APT1023 at 10:30 at Central Virginia Orthopedics Center, 1003 Care Way, Henrico, VA, 23229; vehicle VEH1002; estimated travel time 23 minutes; wheelchair required: True; accommodation: wheelchair.",
+    "status": "open",
+    "priority": "medium",
+    "relatedEntityIds": [
+      "RIDE1022"
+    ],
+    "assignedCaregiverId": null,
+    "openedAt": "2026-08-31T19:49:52.568800+00:00",
+    "updatedAt": "2026-08-31T19:49:52.597067+00:00",
+    "targetDate": null,
+    "closedAt": null,
+    "latestStatusNote": "Case submitted",
+    "simulation": true,
+    "caseId": "CASE1008"
+  }
+]

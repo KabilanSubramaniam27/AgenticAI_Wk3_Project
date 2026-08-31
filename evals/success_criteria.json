@@ -1,0 +1,13 @@
+{
+  "routingAccuracyMinimum": 0.80,
+  "agentSelectionAccuracyMinimum": 0.80,
+  "executionPlanAccuracyMinimum": 0.80,
+  "recipientGuardrailAccuracyMinimum": 1.0,
+  "agentBenchmarkPassRateMinimum": 0.80,
+  "averageCodeScoreMinimum": 0.90,
+  "usableWithinTargetRateMinimum": 0.80,
+  "humanApprovalRateMinimum": 0.80,
+  "humanAverageRatingMinimum": 4.0,
+  "targetTaskCompletionMinutes": 5,
+  "targetUsableOutcomes": "8 out of 10"
+}

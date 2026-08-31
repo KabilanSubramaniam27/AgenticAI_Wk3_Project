@@ -1,0 +1,226 @@
+[
+  {
+    "benefitApplicationId": "BEN1001",
+    "seniorId": "SEN1001",
+    "benefitType": "Medicare Savings Program",
+    "applicationDate": "2026-08-27",
+    "status": "not_started",
+    "missingDocuments": [
+      "proof_of_income",
+      "photo_id"
+    ],
+    "nextAction": "start application",
+    "lastUpdated": "2026-08-28"
+  },
+  {
+    "benefitApplicationId": "BEN1002",
+    "seniorId": "SEN1002",
+    "benefitType": "Extra Help",
+    "applicationDate": "2026-08-26",
+    "status": "submitted",
+    "missingDocuments": [],
+    "nextAction": "wait for agency response",
+    "lastUpdated": "2026-08-27"
+  },
+  {
+    "benefitApplicationId": "BEN1003",
+    "seniorId": "SEN1003",
+    "benefitType": "Utility Assistance",
+    "applicationDate": "2026-08-25",
+    "status": "documents_needed",
+    "missingDocuments": [
+      "proof_of_income",
+      "photo_id"
+    ],
+    "nextAction": "upload documents",
+    "lastUpdated": "2026-08-26"
+  },
+  {
+    "benefitApplicationId": "BEN1004",
+    "seniorId": "SEN1004",
+    "benefitType": "SNAP",
+    "applicationDate": "2026-08-24",
+    "status": "approved",
+    "missingDocuments": [],
+    "nextAction": "none",
+    "lastUpdated": "2026-08-25"
+  },
+  {
+    "benefitApplicationId": "BEN1005",
+    "seniorId": "SEN1005",
+    "benefitType": "Prescription Cost Assistance",
+    "applicationDate": "2026-08-23",
+    "status": "under_review",
+    "missingDocuments": [],
+    "nextAction": "follow up with agency",
+    "lastUpdated": "2026-08-24"
+  },
+  {
+    "benefitApplicationId": "BEN1006",
+    "seniorId": "SEN1006",
+    "benefitType": "Medicare Savings Program",
+    "applicationDate": "2026-08-22",
+    "status": "not_started",
+    "missingDocuments": [
+      "proof_of_income",
+      "photo_id"
+    ],
+    "nextAction": "start application",
+    "lastUpdated": "2026-08-23"
+  },
+  {
+    "benefitApplicationId": "BEN1007",
+    "seniorId": "SEN1007",
+    "benefitType": "Extra Help",
+    "applicationDate": "2026-08-21",
+    "status": "submitted",
+    "missingDocuments": [],
+    "nextAction": "wait for agency response",
+    "lastUpdated": "2026-08-28"
+  },
+  {
+    "benefitApplicationId": "BEN1008",
+    "seniorId": "SEN1008",
+    "benefitType": "Utility Assistance",
+    "applicationDate": "2026-08-20",
+    "status": "documents_needed",
+    "missingDocuments": [
+      "proof_of_income",
+      "photo_id"
+    ],
+    "nextAction": "upload documents",
+    "lastUpdated": "2026-08-27"
+  },
+  {
+    "benefitApplicationId": "BEN1009",
+    "seniorId": "SEN1009",
+    "benefitType": "SNAP",
+    "applicationDate": "2026-08-19",
+    "status": "approved",
+    "missingDocuments": [],
+    "nextAction": "none",
+    "lastUpdated": "2026-08-26"
+  },
+  {
+    "benefitApplicationId": "BEN1010",
+    "seniorId": "SEN1010",
+    "benefitType": "Prescription Cost Assistance",
+    "applicationDate": "2026-08-18",
+    "status": "under_review",
+    "missingDocuments": [],
+    "nextAction": "follow up with agency",
+    "lastUpdated": "2026-08-25"
+  },
+  {
+    "benefitApplicationId": "BEN1011",
+    "seniorId": "SEN1011",
+    "benefitType": "Medicare Savings Program",
+    "applicationDate": "2026-08-17",
+    "status": "not_started",
+    "missingDocuments": [
+      "proof_of_income",
+      "photo_id"
+    ],
+    "nextAction": "start application",
+    "lastUpdated": "2026-08-24"
+  },
+  {
+    "benefitApplicationId": "BEN1012",
+    "seniorId": "SEN1012",
+    "benefitType": "Extra Help",
+    "applicationDate": "2026-08-16",
+    "status": "submitted",
+    "missingDocuments": [],
+    "nextAction": "wait for agency response",
+    "lastUpdated": "2026-08-23"
+  },
+  {
+    "benefitApplicationId": "BEN1013",
+    "seniorId": "SEN1013",
+    "benefitType": "Utility Assistance",
+    "applicationDate": "2026-08-27",
+    "status": "documents_needed",
+    "missingDocuments": [
+      "proof_of_income",
+      "photo_id"
+    ],
+    "nextAction": "upload documents",
+    "lastUpdated": "2026-08-28"
+  },
+  {
+    "benefitApplicationId": "BEN1014",
+    "seniorId": "SEN1014",
+    "benefitType": "SNAP",
+    "applicationDate": "2026-08-26",
+    "status": "approved",
+    "missingDocuments": [],
+    "nextAction": "none",
+    "lastUpdated": "2026-08-27"
+  },
+  {
+    "benefitApplicationId": "BEN1015",
+    "seniorId": "SEN1015",
+    "benefitType": "Prescription Cost Assistance",
+    "applicationDate": "2026-08-25",
+    "status": "under_review",
+    "missingDocuments": [],
+    "nextAction": "follow up with agency",
+    "lastUpdated": "2026-08-26"
+  },
+  {
+    "benefitApplicationId": "BEN1016",
+    "seniorId": "SEN1016",
+    "benefitType": "Medicare Savings Program",
+    "applicationDate": "2026-08-24",
+    "status": "not_started",
+    "missingDocuments": [
+      "proof_of_income",
+      "photo_id"
+    ],
+    "nextAction": "start application",
+    "lastUpdated": "2026-08-25"
+  },
+  {
+    "benefitApplicationId": "BEN1017",
+    "seniorId": "SEN1017",
+    "benefitType": "Extra Help",
+    "applicationDate": "2026-08-23",
+    "status": "submitted",
+    "missingDocuments": [],
+    "nextAction": "wait for agency response",
+    "lastUpdated": "2026-08-24"
+  },
+  {
+    "benefitApplicationId": "BEN1018",
+    "seniorId": "SEN1018",
+    "benefitType": "Utility Assistance",
+    "applicationDate": "2026-08-22",
+    "status": "documents_needed",
+    "missingDocuments": [
+      "proof_of_income",
+      "photo_id"
+    ],
+    "nextAction": "upload documents",
+    "lastUpdated": "2026-08-23"
+  },
+  {
+    "benefitApplicationId": "BEN1019",
+    "seniorId": "SEN1019",
+    "benefitType": "SNAP",
+    "applicationDate": "2026-08-21",
+    "status": "approved",
+    "missingDocuments": [],
+    "nextAction": "none",
+    "lastUpdated": "2026-08-28"
+  },
+  {
+    "benefitApplicationId": "BEN1020",
+    "seniorId": "SEN1020",
+    "benefitType": "Prescription Cost Assistance",
+    "applicationDate": "2026-08-20",
+    "status": "under_review",
+    "missingDocuments": [],
+    "nextAction": "follow up with agency",
+    "lastUpdated": "2026-08-27"
+  }
+]

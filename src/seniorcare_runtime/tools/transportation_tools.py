@@ -182,15 +182,3 @@ class TransportationTools:
         )
         self.audit.record("dummy_ride_booked", str(ride["rideId"]), ride)
         return simulated(ride)
-
-    def modify_dummy_ride(self, ride_id: str, pickup_date: str, pickup_time: str) -> dict:
-        ride = self.repo.rides.update(
-            ride_id, {"pickupDate": pickup_date, "pickupTime": pickup_time, "status": "confirmed"}
-        )
-        self.audit.record("dummy_ride_modified", ride_id, ride)
-        return simulated(ride)
-
-    def cancel_dummy_ride(self, ride_id: str) -> dict:
-        ride = self.repo.rides.update(ride_id, {"status": "cancelled"})
-        self.audit.record("dummy_ride_cancelled", ride_id, ride)
-        return simulated(ride)

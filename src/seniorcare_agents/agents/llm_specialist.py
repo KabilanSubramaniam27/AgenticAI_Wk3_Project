@@ -138,9 +138,6 @@ REQUIRED_ACTION_PARAMETERS: dict[str, frozenset[str]] = {
             "return_ride_required",
         }
     ),
-    "request_dummy_refill": frozenset({"medication_id"}),
-    "enroll_dummy_meal_service": frozenset({"meal_service_id"}),
-    "register_dummy_event": frozenset({"activity_id"}),
     "request_dummy_home_support": frozenset({"request_type", "priority", "notes"}),
 }
 ACTION_ALIASES: dict[str, dict[str, str]] = {
@@ -456,9 +453,6 @@ class LangGraphSpecialist:
                 action_label = {
                     "book_dummy_appointment": "appointment",
                     "book_dummy_ride": "transportation",
-                    "request_dummy_refill": "refill",
-                    "enroll_dummy_meal_service": "meal enrollment",
-                    "register_dummy_event": "activity registration",
                     "request_dummy_home_support": "home-support request",
                 }.get(proposed.action_type, "action")
                 if proposed.action_type == "book_dummy_appointment" and {

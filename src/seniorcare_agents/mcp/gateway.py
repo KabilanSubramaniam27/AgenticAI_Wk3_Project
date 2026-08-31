@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import time
 from typing import Any
 
 from langchain_core.tools import BaseTool
@@ -49,7 +50,8 @@ class MCPToolGateway:
 
     async def call(self, tool_name: str, *, _retry_safe: bool = False, **arguments: Any) -> Any:
         tool = (await self.get_tools({tool_name}))[0]
-        flow_event("mcp_tool", tool_name, "input", arguments)
+        started = time.perf_counter()
+        flow_event("mcp_tool", tool_name, "input", arguments, selected_tool=tool_name)
         attempts = self.read_max_attempts if _retry_safe else 1
         for attempt in range(1, attempts + 1):
             try:
@@ -61,6 +63,8 @@ class MCPToolGateway:
                     tool_name,
                     "error",
                     {"attempt": attempt, "maxAttempts": attempts, "error": str(exc)},
+                    selected_tool=tool_name,
+                    duration_ms=(time.perf_counter() - started) * 1000,
                 )
                 if attempt == attempts:
                     raise MCPToolError(
@@ -68,7 +72,14 @@ class MCPToolGateway:
                     ) from exc
                 await asyncio.sleep(self.retry_base_seconds * (2 ** (attempt - 1)))
         decoded = self._decode_text_blocks(result)
-        flow_event("mcp_tool", tool_name, "output", decoded)
+        flow_event(
+            "mcp_tool",
+            tool_name,
+            "output",
+            decoded,
+            selected_tool=tool_name,
+            duration_ms=(time.perf_counter() - started) * 1000,
+        )
         return decoded
 
     @staticmethod

@@ -80,6 +80,7 @@ class HybridRetriever:
                 row.freshness_warning = (
                     f"Source was retrieved more than {self.settings.stale_resource_days} days ago."
                 )
+        total_ms = (time.perf_counter() - started) * 1000
         trace = {
             "timestamp": datetime.now(UTC).isoformat(),
             "agent": agent,
@@ -97,7 +98,7 @@ class HybridRetriever:
                 "bm25": bm_ms,
                 "vector": vector_ms,
                 "rerank": (time.perf_counter() - rerank_started) * 1000,
-                "total": (time.perf_counter() - started) * 1000,
+                "total": total_ms,
             },
         }
         self.settings.trace_path.parent.mkdir(parents=True, exist_ok=True)
@@ -113,5 +114,8 @@ class HybridRetriever:
                 "vectorError": vector_error,
                 "latencyMs": trace["latencyMs"],
             },
+            selected_agent=agent,
+            duration_ms=total_ms,
+            status="success" if vector_error is None else "partial",
         )
         return final

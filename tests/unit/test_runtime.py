@@ -13,10 +13,6 @@ from seniorcare_runtime.repositories import ProviderRepository, SeniorRepository
 from seniorcare_runtime.services import RiskDetectionService, SeniorContextService
 from seniorcare_runtime.tools import (
     AppointmentTools,
-    EventTools,
-    MealTools,
-    MedicationTools,
-    ReminderTools,
     TransportationTools,
 )
 
@@ -128,7 +124,7 @@ def test_context_identity_and_deterministic_risk(tmp_path: Path):
     }
 
 
-def test_simulated_domain_tools_write_local_records(tmp_path: Path):
+def test_phase_one_transportation_tool_writes_local_record(tmp_path: Path):
     settings = runtime_settings(tmp_path)
     ride = TransportationTools(settings).book_dummy_ride(
         "SEN1001",
@@ -145,15 +141,8 @@ def test_simulated_domain_tools_write_local_records(tmp_path: Path):
         30,
         return_ride_required=True,
     )
-    refill = MedicationTools(settings).request_dummy_refill("SEN1001", "MED1001")
-    meal = MealTools(settings).enroll_dummy_meal_service("SEN1001", "MEAL1001")
-    reminder = ReminderTools(settings).schedule_dummy_reminder(
-        "SEN1001", "appointment", "APT1001", "2026-09-01", "18:00", "Study reminder"
-    )
-    event = EventTools(settings).register_dummy_event("SEN1001", "ACT1001")
-    for result in (ride, refill, meal, reminder, event):
-        assert result["simulation"] is True
-        assert result["externalActionPerformed"] is False
+    assert ride["simulation"] is True
+    assert ride["externalActionPerformed"] is False
     assert ride["data"]["returnRideRequired"] is True
     assert ride["data"]["pickupAddress"] == "123 Main Street, Richmond, VA 23220"
     assert ride["data"]["vehicleId"] == "VEH-TRN1001-01"

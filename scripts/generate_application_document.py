@@ -15,7 +15,6 @@ from xml.sax.saxutils import escape as xml_escape
 import pymupdf
 from bs4 import BeautifulSoup, Tag
 
-
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs"
 TITLE = "SeniorCare Connect — Application Design & Technical Architecture"
@@ -297,9 +296,9 @@ cases                       + Actian + RRF     approvals
                  read tools      approved writes    RAG/resources''','Figure 8. MCP least-privilege boundary')}
       <p>The server exposes member/context, appointments, providers and slots, rides and transportation,
       medication references, meal and social services, home support, cases, audit, risk and public
-      knowledge. Write tools include local appointment/ride mutation, case creation/status, reminders,
-      refill requests, meal enrollment, events and home support; runtime policies expose only the
-      subset appropriate to the current phase and approval path.</p>
+      knowledge. Phase 1 write tools are intentionally limited to appointment operations, initial ride
+      booking, case creation/status and home support. Medication, meal and social workflows remain
+      read-only discovery capabilities.</p>
     """))
 
     parts.append(section("10", "Deep-Agent LangGraph Workflow", f"""
@@ -348,7 +347,7 @@ specialist_plan_llm -> validate_tool_plan -> execute_mcp_reads
       working data, not a guarantee that every source is fresh or every vector is presently indexed.</p>
     """))
 
-    parts.append(section("12", "Schemas, Cleaning, Chunking and Embeddings", f"""
+    parts.append(section("12", "Schemas, Cleaning, Chunking and Embeddings", """
       <p>Pydantic contracts preserve source, authority/trust, category, title/section/program, geography,
       population, dates, page, content hash and metadata. Provider rows retain NPI and structured
       address/specialty fields. Cleaning is deterministic: Unicode and whitespace normalization,
@@ -465,11 +464,13 @@ Named source follow-up -> retrieve again -> match source name/title -> content +
       authorization.</p>
     """))
 
-    parts.append(section("20", "Observability, Audit and Recovery", f"""
+    parts.append(section("20", "Observability, Audit and Recovery", """
       <p>UI, API, guardrails, orchestrator planning, specialist planning, MCP tools, RAG, synthesis,
       approvals and errors emit compact JSON boundary events to terminal and <code>application.log</code>.
       Events correlate by request ID and use <code>MM:DD:YYYY HH:MM:SS.mmm</code>. Logs redact sensitive
-      values and summarize large lists.</p>
+      values and reduce member context, conversation history, retrieved chunks, structured tool arrays
+      and LLM envelopes to bounded counts/shapes. Events retain only correlation, component/operation,
+      direction, selected agent/tool, duration, status, a small summary and errors.</p>
       <p>Durable audit JSONL is distinct from ephemeral flow logs and retrieval traces. The ingestion
       manifest supports resume/idempotency. Runtime sessions/checkpoints are in-memory and therefore
       lost on API restart; durable approved operational JSON remains. MCP reads use bounded retries,
@@ -657,12 +658,8 @@ seniorcare-eval''','Command 4. Inspection and validation')}
 
       {table(['Package / file','Responsibility'],[
         ['src/seniorcare_runtime/tools/appointment_tools.py','Local appointment booking/cancellation/rescheduling with provider-slot validation and audit.'],
-        ['src/seniorcare_runtime/tools/transportation_tools.py','Trip estimation, wheelchair-capable selection, pickup-buffer calculation and local ride mutation.'],
-        ['src/seniorcare_runtime/tools/medication_tools.py','Local medication/refill operations retained behind approval policy.'],
-        ['src/seniorcare_runtime/tools/meal_tools.py','Meal-service lookup/enrollment implementation; enrollment is not exposed to Phase 1 agents.'],
-        ['src/seniorcare_runtime/tools/event_tools.py','Social activity lookup/registration implementation; registration is not exposed to Phase 1 agents.'],
+        ['src/seniorcare_runtime/tools/transportation_tools.py','Trip estimation, wheelchair-capable selection, pickup-buffer calculation and initial local ride booking.'],
         ['src/seniorcare_runtime/tools/home_support_tools.py','Local home-support request creation and audit.'],
-        ['src/seniorcare_runtime/tools/reminder_tools.py','Local reminder scheduling implementation.'],
         ['src/seniorcare_runtime/tools/common.py','Shared simulation metadata and non-sensitive recipient snapshot helpers.'],
         ['src/seniorcare_runtime/services/senior_context_service.py','Combines member-owned operational records into a recipient-aware context projection.'],
         ['src/seniorcare_runtime/services/risk_detection_service.py','Deterministic rule-based overdue, medication, ride and unresolved-task risk flags.'],

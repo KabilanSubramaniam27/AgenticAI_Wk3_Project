@@ -41,7 +41,6 @@ from seniorcare_agents.services import InMemoryAgentSessionStore, PersistentAgen
 from seniorcare_runtime.agents import MemberCaseAgent
 from seniorcare_runtime.config import RuntimeSettings
 from seniorcare_runtime.repositories import AppointmentRepository, CaseRepository
-from seniorcare_runtime.tools import EventTools, MealTools
 
 
 class InProcessTestGateway(MCPToolGateway):
@@ -360,9 +359,6 @@ async def test_write_executes_only_after_approval_and_attaches_to_case(tmp_path:
     [
         ("book_dummy_appointment", "appointmentId"),
         ("book_dummy_ride", "rideId"),
-        ("request_dummy_refill", "refillId"),
-        ("enroll_dummy_meal_service", "mealEnrollmentId"),
-        ("register_dummy_event", "registrationId"),
         ("request_dummy_home_support", "homeSupportRequestId"),
     ],
 )
@@ -456,8 +452,6 @@ def test_fastapi_health_member_and_case_isolation(tmp_path: Path):
 
 def test_case_history_includes_linked_appointment_and_provider_details(tmp_path: Path):
     settings = settings_with_data(tmp_path)
-    meal = MealTools(settings).enroll_dummy_meal_service("SEN1001", "MEAL1001", "SEN1001")
-    activity = EventTools(settings).register_dummy_event("SEN1001", "ACT1001", "SEN1001")
     case = CaseRepository(settings).create_case(
         {
             "seniorId": "SEN1001",
@@ -470,8 +464,8 @@ def test_case_history_includes_linked_appointment_and_provider_details(tmp_path:
                 "APT1001",
                 "RIDE1001",
                 "RFL1001",
-                meal["data"]["mealEnrollmentId"],
-                activity["data"]["registrationId"],
+                "MENR1001",
+                "REG1001",
                 "HOME1001",
                 "DIS1001",
                 "BEN1001",

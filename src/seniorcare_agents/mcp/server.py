@@ -23,11 +23,7 @@ from seniorcare_runtime.repositories.base import JsonRepository
 from seniorcare_runtime.services import AuditService, RiskDetectionService, SeniorContextService
 from seniorcare_runtime.tools import (
     AppointmentTools,
-    EventTools,
     HomeSupportTools,
-    MealTools,
-    MedicationTools,
-    ReminderTools,
     TransportationTools,
 )
 
@@ -585,10 +581,6 @@ def create_seniorcare_mcp_server(
 
     appointment_tools = AppointmentTools(settings)
     transportation_tools = TransportationTools(settings)
-    medication_tools = MedicationTools(settings)
-    meal_tools = MealTools(settings)
-    reminder_tools = ReminderTools(settings)
-    event_tools = EventTools(settings)
     home_tools = HomeSupportTools(settings)
 
     @server.tool(annotations=CREATE_ONLY)
@@ -658,40 +650,6 @@ def create_seniorcare_mcp_server(
         )
 
     @server.tool(annotations=CREATE_ONLY)
-    def modify_dummy_ride(ride_id: str, pickup_date: str, pickup_time: str) -> dict[str, Any]:
-        """Modify an approved local simulated ride."""
-        return transportation_tools.modify_dummy_ride(ride_id, pickup_date, pickup_time)
-
-    @server.tool(annotations=DESTRUCTIVE_WRITE)
-    def cancel_dummy_ride(ride_id: str) -> dict[str, Any]:
-        """Cancel an approved local simulated ride."""
-        return transportation_tools.cancel_dummy_ride(ride_id)
-
-    @server.tool(annotations=CREATE_ONLY)
-    def request_dummy_refill(
-        senior_id: str,
-        medication_id: str,
-        method: str = "pickup",
-        recipient_id: str | None = None,
-    ) -> dict[str, Any]:
-        """Create an approved simulated refill request; no pharmacy is contacted."""
-        return medication_tools.request_dummy_refill(senior_id, medication_id, method, recipient_id)
-
-    @server.tool(annotations=CREATE_ONLY)
-    def enroll_dummy_meal_service(
-        senior_id: str, meal_service_id: str, recipient_id: str | None = None
-    ) -> dict[str, Any]:
-        """Create an approved simulated meal enrollment."""
-        return meal_tools.enroll_dummy_meal_service(senior_id, meal_service_id, recipient_id)
-
-    @server.tool(annotations=CREATE_ONLY)
-    def register_dummy_event(
-        senior_id: str, activity_id: str, recipient_id: str | None = None
-    ) -> dict[str, Any]:
-        """Create an approved simulated activity registration."""
-        return event_tools.register_dummy_event(senior_id, activity_id, recipient_id)
-
-    @server.tool(annotations=CREATE_ONLY)
     def request_dummy_home_support(
         senior_id: str,
         request_type: str,
@@ -702,29 +660,6 @@ def create_seniorcare_mcp_server(
         """Create an approved simulated home-support request."""
         return home_tools.request_dummy_home_support(
             senior_id, request_type, priority, notes, recipient_id
-        )
-
-    @server.tool(annotations=CREATE_ONLY)
-    def schedule_dummy_reminder(
-        senior_id: str,
-        reminder_type: str,
-        related_entity_id: str,
-        reminder_date: str,
-        reminder_time: str,
-        message: str,
-        caregiver_id: str | None = None,
-        delivery_method: str = "app",
-    ) -> dict[str, Any]:
-        """Create an approved local simulated reminder."""
-        return reminder_tools.schedule_dummy_reminder(
-            senior_id,
-            reminder_type,
-            related_entity_id,
-            reminder_date,
-            reminder_time,
-            message,
-            caregiver_id,
-            delivery_method,
         )
 
     return server

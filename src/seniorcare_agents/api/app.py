@@ -1,4 +1,5 @@
 import re
+import time
 from contextlib import asynccontextmanager
 from typing import Any
 from uuid import uuid4
@@ -242,13 +243,27 @@ def create_api(application: SeniorCareApplication | None = None) -> FastAPI:
     async def terminal_request_trace(request: Request, call_next):
         token = begin_request(request.headers.get("x-request-id"))
         operation = f"{request.method} {request.url.path}"
+        started = time.perf_counter()
         flow_event("api", operation, "input", {"query": dict(request.query_params)})
         try:
             response = await call_next(request)
-            flow_event("api", operation, "output", {"statusCode": response.status_code})
+            flow_event(
+                "api",
+                operation,
+                "output",
+                {"statusCode": response.status_code},
+                duration_ms=(time.perf_counter() - started) * 1000,
+                status="success" if response.status_code < 400 else "failed",
+            )
             return response
         except Exception as exc:
-            flow_event("api", operation, "error", exc)
+            flow_event(
+                "api",
+                operation,
+                "error",
+                exc,
+                duration_ms=(time.perf_counter() - started) * 1000,
+            )
             raise
         finally:
             end_request(token)

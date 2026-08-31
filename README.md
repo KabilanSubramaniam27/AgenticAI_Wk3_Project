@@ -278,10 +278,17 @@ risks = RiskDetectionService(settings).evaluate("SEN1001")
 slots = AppointmentTools(settings).find_available_slots("PRV1001")
 ```
 
-Calling `book_dummy_appointment`, `book_dummy_ride`, `request_dummy_refill`,
-`enroll_dummy_meal_service`, `schedule_dummy_reminder`, or
-`register_dummy_event` changes local study data. Tests use temporary copies and
-never mutate the project datasets.
+Phase 1 exposes approved local writes only for appointments, initial ride bookings,
+home-support requests, member/case coordination, and case status changes. Medication,
+meal, and social-activity capabilities are read-only discovery workflows. Tests use
+temporary copies and never mutate the project datasets.
+
+Application flow logs are deliberately compact. Each JSON event retains correlation,
+component, operation, direction, status, optional agent/tool and duration, a small
+input/output summary, or an error. Full prompts, conversation history, member context,
+retrieved chunks, and structured tool arrays are represented only by counts and shapes.
+Tune bounded summaries with `APPLICATION_LOG_MAX_FIELDS` and
+`APPLICATION_LOG_MAX_STRING`.
 
 ### Member and case agent
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
@@ -73,6 +74,7 @@ def api_request(method: str, path: str, **kwargs: Any) -> requests.Response | No
     operation = f"{method.upper()} {path}"
     headers = dict(kwargs.pop("headers", {}))
     headers["X-Request-ID"] = current_request_id()
+    started = time.perf_counter()
     flow_event(
         "ui",
         operation,
@@ -90,10 +92,18 @@ def api_request(method: str, path: str, **kwargs: Any) -> requests.Response | No
             operation,
             "output",
             {"statusCode": response.status_code, "response": output},
+            duration_ms=(time.perf_counter() - started) * 1000,
+            status="success" if response.ok else "failed",
         )
         return response
     except requests.RequestException as exc:
-        flow_event("ui", operation, "error", exc)
+        flow_event(
+            "ui",
+            operation,
+            "error",
+            exc,
+            duration_ms=(time.perf_counter() - started) * 1000,
+        )
         st.error("The SeniorCare service is unavailable. Start `seniorcare-api` and try again.")
         return None
     finally:

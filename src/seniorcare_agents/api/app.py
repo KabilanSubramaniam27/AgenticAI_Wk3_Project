@@ -72,6 +72,10 @@ def contextualize_followup(query: str, session: AgentSession) -> str:
     provider_followup = (
         bool(re.search(r"\b(?:book|schedule|make)\b", lower_query) and "appointment" in lower_query)
         or clarification_answer
+        or bool(
+            re.search(r"\b(?:book|schedule)\b", lower_query)
+            and re.search(r"\b(?:any|available)\s+(?:doctor|provider)\b", lower_query)
+        )
     )
     if provider_followup:
         # Use the immediately preceding assistant result first so an older provider search cannot
@@ -124,6 +128,22 @@ def contextualize_followup(query: str, session: AgentSession) -> str:
                 f"selected in the preceding response. Previous request: {prior_request}. "
                 "Resolve provider and availability IDs using MCP records; do not ask for the "
                 "appointment type."
+            )
+        prior_provider_request = next(
+            (
+                value
+                for value in reversed(previous_user_queries)
+                if re.search(r"\b(?:doctor|provider|physician|orthopedic)\b", value, re.I)
+                and re.search(r"\b(?:find|search|available|knee|leg|shoulder|hip)\b", value, re.I)
+            ),
+            "",
+        )
+        if prior_provider_request:
+            return (
+                f"Book a doctor/provider appointment using the first verified available "
+                f"provider-slot pair. Previous request: {prior_provider_request}. "
+                "Resolve provider_id and availability_id through MCP records. These are internal "
+                "identifiers and must never be requested from the user."
             )
     explicit_transport_request = any(
         term in lower_query
@@ -350,13 +370,16 @@ def create_api(application: SeniorCareApplication | None = None) -> FastAPI:
         if not member_value:
             raise HTTPException(404, "Member not found")
         await runtime.mcp.call("close_due_cases", user_id=user_id)
-        values = unwrap_record_list(await runtime.mcp.call("list_cases", user_id=user_id))
+        values = unwrap_record_list(
+            await runtime.mcp.call("list_cases", user_id=user_id), allow_singleton=True
+        )
         for case_value in values:
             related_ids = case_value.get("relatedEntityIds") or []
             case_value["relatedRecords"] = unwrap_record_list(
                 await runtime.mcp.call(
                     "get_case_related_records", user_id=user_id, entity_ids=related_ids
-                )
+                ),
+                allow_singleton=True,
             )
         return {
             "simulation": True,

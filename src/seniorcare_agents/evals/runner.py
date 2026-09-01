@@ -6,7 +6,11 @@ from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
-from seniorcare_agents.agents.llm_specialist import RAG_CATEGORIES, READ_TOOL_POLICIES
+from seniorcare_agents.agents.llm_specialist import (
+    RAG_CATEGORIES,
+    READ_TOOL_POLICIES,
+    WRITE_ACTIONS,
+)
 from seniorcare_agents.application import create_application
 from seniorcare_agents.evals.agent_evaluators import (
     CodeBasedAgentEvaluator,
@@ -162,6 +166,7 @@ class EvaluationRunner:
                 expected_agent=case["expectedAgent"],
                 expected_statuses=set(case.get("expectedStatuses", ["success", "partial"])),
                 expected_action_types=set(case.get("expectedActions", [])),
+                allowed_action_types=set(WRITE_ACTIONS[case["agent"]]),
                 required_summary_terms=set(case.get("requiredSummaryTerms", [])),
                 user_id=case["userId"],
                 member=member,

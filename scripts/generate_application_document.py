@@ -107,7 +107,8 @@ def build_html() -> str:
         "Supported Care Areas", "Goals, Non-Goals and Personas", "Registration and Cases",
         "Overall Architecture", "MCP Architecture", "LangGraph Deep-Agent Workflow",
         "Ingestion Subsystem", "Data, Chunking and Embeddings", "Hybrid RAG",
-        "Agent Topology and Tool Boundaries", "Conversation and Grounding", "Approval and Simulation",
+        "Agent Topology and Tool Boundaries", "User Query Runtime Flow — File-by-File",
+        "Conversation and Grounding", "Approval and Simulation",
         "UI", "Guardrails and Privacy", "Observability and Audit", "Evaluation",
         "Runbook and Troubleshooting", "Implementation Status", "Package and File Reference",
         "Roadmap", "Glossary"
@@ -129,7 +130,7 @@ def build_html() -> str:
       <p><b>Evidence position.</b> The repository demonstrates the architecture and has strong code-based
       validation. The five-minute and eight-of-ten targets remain project success criteria; they are
       not claimed as achieved because a completed representative human-evaluation study was not found.
-      The latest local run completed 106 tests with one live-service test skipped. A recorded routing
+      The latest local run completed 108 tests with one live-service test skipped. A recorded routing
       report evaluated 15 items with 1.00 intent and agent-selection accuracy, but this is not a
       substitute for end-user outcome measurement.</p>
       {table(['Concern','Design response'],[
@@ -395,15 +396,255 @@ specialist_plan_llm -> validate_tool_plan -> execute_mcp_reads
       Repositories, services, retrievers and the MCP gateway are components—not agents.</p>
     """))
 
-    parts.append(section("15", "Conversation, Follow-Ups and Grounded Responses", f"""
-      <p>An in-memory session contains account ID, selected recipient, recent chat, rolling summary,
-      active case/checkpoint and pending proposal. The current turn remains authoritative. Domain-scoped
+    parts.append(section("15", "User Query Runtime Flow — File-by-File", f"""
+      <p>This section follows the actual Python call path. Application and specialist graphs are
+      constructed once at API startup; the remaining steps occur for each submitted user turn.</p>
+      {pre('''STARTUP (once)
+application.py:create_application
+  -> RuntimeSettings + shared ChatOpenAI + MCPToolGateway
+  -> seven LangGraphSpecialist configurations + orchestrator
+  -> graph/builder.py compiles main graph
+  -> initialize_agents() discovers tools and compiles specialist subgraphs
+
+REQUEST (each turn)
+ui/app.py:st.chat_input
+  -> api_request(POST /chat)
+  -> api/app.py:chat + PersistentAgentSessionStore
+  -> graph/builder.py main LangGraph
+  -> orchestrator.py planning LLM
+  -> selected specialist subgraphs
+  -> mcp/gateway.py over Streamable HTTP
+  -> mcp/server.py
+       + repositories / structured CMS-openFDA records
+       + hybrid RAG / risk / audit services
+  -> specialist synthesis LLM
+  -> orchestrator final synthesis LLM
+  -> output guardrails
+  -> FastAPI JSON -> Streamlit rendering''','Figure 12. End-to-end Python file call chain')}
+
+      {table(['Order','Python file / entry point','Runtime responsibility'],[
+        ['0 — startup','src/seniorcare_agents/application.py · create_application()','Build settings, shared OpenAI model, MCP gateway, specialists, orchestrator, main graph, approvals and persistent session store.'],
+        ['0 — startup','SeniorCareApplication.initialize_agents()','Discover each specialist allowlist and compile each stateless specialist graph once for reuse.'],
+        ['1','src/seniorcare_agents/ui/app.py · st.chat_input()/api_request()','Capture the question and POST query, user, session, recipient and active-case identifiers to /chat.'],
+        ['2','src/seniorcare_agents/api/app.py · chat()','Load/create the owned session, discard superseded proposals, contextualize narrow follow-ups and invoke the main graph.'],
+        ['3','src/seniorcare_agents/services/session_store.py','Persist bounded messages, recipient, active case and pending-action IDs to runtime JSON with TTL cleanup.'],
+        ['4','src/seniorcare_agents/graph/builder.py','Run input guardrails, member/recipient resolution, planning, staged specialists, synthesis, output guardrails and optional interrupt.'],
+        ['5','src/seniorcare_agents/agents/orchestrator.py · plan()','Ask the LLM for typed intents, selected agents, explanations, missing information and dependency stages.'],
+        ['6','src/seniorcare_agents/guardrails/agents.py','Reject unknown/duplicate agents, invalid stages, forbidden tools/actions, ownership errors and invalid citations.'],
+        ['7','src/seniorcare_agents/agents/orchestrator.py · run()','Execute each stage in order and use asyncio.gather for independent specialists in the same stage.'],
+        ['8','src/seniorcare_agents/agents/llm_specialist.py','Plan allowed reads, validate the plan, execute MCP reads, validate evidence, synthesize and validate AgentResult.'],
+        ['9','src/seniorcare_agents/mcp/gateway.py · call()','Invoke cached, allowlisted LangChain MCP tools over Streamable HTTP; retry only safe reads and decode results.'],
+        ['10','src/seniorcare_agents/mcp/server.py','Apply the authoritative server tool registry and delegate to repositories, structured records, RAG and services.'],
+        ['11','src/seniorcare_runtime/repositories/','Read recipient-owned synthetic appointments, rides, medication state, meals, activities, home support and cases.'],
+        ['12','src/seniorcare_agents/retrieval/hybrid.py','Combine BM25, Nebius/Actian dense retrieval, RRF, optional reranking and metadata/freshness policy.'],
+        ['13','orchestrator.py:synthesize() + graph/builder.py:merge_node()','Combine only validated results, build citations and retain mandatory approval/local-only notices.'],
+        ['14','src/seniorcare_agents/guardrails/output.py','Reject unsupported external-execution, unapproved-booking and unsafe medication claims.'],
+        ['15','api/app.py -> ui/app.py','Record the exchange, return JSON, remember the answer and rerender the Streamlit conversation.'],
+      ],'Table 9. File-by-file request execution sequence')}
+
+      <h2>Detailed component-by-component execution narrative</h2>
+      <h3>1. Application startup</h3>
+      <p><code>src/seniorcare_agents/application.py</code> is the composition root used when
+      <code>seniorcare-api</code> starts. <code>create_application()</code> reads
+      <code>RuntimeSettings</code>, constructs the shared OpenAI <code>ChatOpenAI</code> model and
+      Streamable HTTP <code>MCPToolGateway</code>, creates all seven specialist configurations and
+      the orchestrator, compiles the main LangGraph, and creates the approval manager and persistent
+      session store. <code>initialize_agents()</code> discovers each specialist's permitted MCP
+      tools and compiles its subgraph once. These stateless agent and graph objects are then reused
+      across requests; user-specific state is never stored on an agent instance.</p>
+
+      <h3>2. The user submits a question</h3>
+      <p><code>src/seniorcare_agents/ui/app.py</code> captures text with
+      <code>st.chat_input()</code>. Its API helper sends <code>POST /chat</code> to FastAPI with the
+      query, account User ID, conversation/session ID, selected recipient ID, and active case ID.
+      It also assigns a request ID so UI, API, graph, LLM, MCP, RAG, and approval events can be
+      correlated without logging the complete payload.</p>
+
+      <h3>3. FastAPI restores conversation state</h3>
+      <p><code>src/seniorcare_agents/api/app.py:chat()</code> finds or creates the owned session,
+      loads recent messages and the rolling context, restores the selected recipient and active
+      case, and discards a superseded unapproved proposal when the user starts a different request.
+      Narrow follow-ups such as “this doctor,” “that appointment,” and “the above booking” are
+      contextualized from verified session facts. The endpoint constructs the initial typed graph
+      state and calls the compiled graph with <code>graph.ainvoke()</code>.</p>
+      <p><code>src/seniorcare_agents/services/session_store.py</code> maintains bounded conversation
+      messages, recipient selection, active case, pending-action identifiers, follow-up context,
+      ownership, and TTL-based expiration in runtime JSON. After graph completion, the request and
+      validated response are appended to the session.</p>
+
+      <h3>4. Main LangGraph applies input and identity controls</h3>
+      <p><code>src/seniorcare_agents/graph/builder.py</code> begins with input guardrails and member
+      resolution. <code>guardrails/input.py</code> rejects empty or excessive input, emergency
+      language that must short-circuit to emergency guidance, unsafe treatment requests, prompt or
+      secret-extraction attempts, and unsupported external actions. Member resolution retrieves
+      account context through MCP and verifies that the user exists, the recipient belongs to that
+      account, referenced appointments/cases belong to that recipient, and recipient selection is
+      unambiguous. Multiple recipients without a usable selection produce a clarification rather
+      than a guessed identity.</p>
+
+      <h3>5. Orchestrator LLM plans the work</h3>
+      <p><code>src/seniorcare_agents/agents/orchestrator.py</code> sends the current request, recent
+      turns, rolling summary, resolved entities, verified application records, referenced
+      appointments, open questions, agent registry, and execution state to the orchestrator LLM.
+      The typed <code>OrchestratorPlan</code> identifies intents, selected specialists, routing
+      rationale, execution stages, dependencies, and missing information. Independent specialists
+      may share a stage; dependent work is assigned to a later stage. If required information is
+      genuinely missing, the turn returns one focused clarification question.</p>
+      <p><code>guardrails/agents.py</code> validates that every selected agent exists and appears
+      exactly once, dependencies are valid, no duplicate or cross-member work is present, and the
+      eventual result set and identifiers match the validated plan.</p>
+
+      <h3>6. Selected specialist LangGraphs execute</h3>
+      <p><code>src/seniorcare_agents/agents/llm_specialist.py</code> provides seven stateless domain
+      specialists: Healthcare Access, Transportation, Medication/Pharmacy, Meals/Food, Social
+      Well-being, Home Support/Safety, and Case Status/Risk. Each configuration has domain-specific
+      instructions, an MCP tool allowlist, a RAG-category allowlist, an action policy, and typed
+      validation. Its planning LLM receives only the assigned objective, relevant conversation
+      turns, task summary, verified recipient facts, dependency results, permitted tools and RAG
+      categories, constraints, and response schema.</p>
+      <p>The specialist plan guardrail rejects tools outside the allowlist, duplicate calls, wrong
+      account/recipient arguments, disallowed RAG categories, and any attempt to perform a write
+      during retrieval. Valid read calls execute, returned evidence is validated, and a second LLM
+      call synthesizes a grounded <code>AgentResult</code>. In
+      <code>orchestrator.py:run()</code>, specialists in the same stage run concurrently with
+      <code>asyncio.gather()</code>; later stages receive validated dependency results.</p>
+
+      <h3>7. MCP client invocation</h3>
+      <p>The specialist never opens repository files or contacts Actian directly. It calls
+      <code>src/seniorcare_agents/mcp/gateway.py</code>, which connects to
+      <code>http://127.0.0.1:8001/mcp</code> using Streamable HTTP, discovers and caches LangChain
+      MCP tool objects, exposes only the specialist's permitted subset, validates tool arguments,
+      invokes the selected tool, retries eligible read failures, decodes the response, and returns
+      structured evidence to the specialist.</p>
+
+      <h3>8. MCP server enforces the data boundary</h3>
+      <p><code>src/seniorcare_agents/mcp/server.py</code> is the server-side boundary for members,
+      recipients, appointment availability, providers, rides and transportation services,
+      medication records/references, meal programs, social activities, home support, cases, risk,
+      audit, and public-knowledge retrieval. The authoritative registry routes each call to a
+      repository, structured dataset adapter, service, or retriever. A tool absent from this
+      registry cannot be invoked by an agent.</p>
+
+      <h3>9. Operational repository retrieval</h3>
+      <p>The MCP server delegates account-owned operational reads to
+      <code>src/seniorcare_runtime/repositories/</code>. The senior, appointment, provider,
+      transportation, medication, meal, social, home-support, and case repositories read the
+      corresponding local records under <code>data/synthetic-data/</code>. For example,
+      <code>list_appointments</code> reads appointment records,
+      <code>search_providers</code> joins provider and availability records, and
+      <code>list_cases</code> reads case history. Ownership checks prevent one account from reading
+      or mutating another account's records.</p>
+
+      <h3>10. Public-knowledge RAG retrieval</h3>
+      <p>For public guidance, <code>src/seniorcare_agents/retrieval/hybrid.py</code> combines BM25
+      lexical retrieval with a Nebius query embedding and Actian dense-vector search. Reciprocal
+      Rank Fusion merges rankings and optional reranking improves ordering. Category, geography,
+      trust, freshness, and specialist policies are applied before returning attributed chunks.
+      Each result retains chunk ID, source name and URL, category, geography, content, retrieval
+      scores, and freshness metadata.</p>
+
+      <h3>11. Specialist LLM synthesizes grounded findings</h3>
+      <p>The synthesis LLM receives the assigned objective, verified recipient, trusted MCP
+      results, dependency evidence, retrieval errors, permitted actions, and citation rules. It
+      returns a typed result with status, summary, tool-call record, sources, risks, missing
+      information, and any approval-required proposal. Provenance is attached from trusted MCP
+      output—not accepted from LLM-generated identifiers. Result validation enforces agent identity,
+      non-empty content, ownership, allowed actions/categories, source attribution, and medical
+      safety boundaries.</p>
+
+      <h3>12. Orchestrator LLM performs final synthesis</h3>
+      <p>The main graph gives only validated specialist results to
+      <code>orchestrator.py:synthesize()</code>. The orchestrator combines findings, removes
+      duplication, coordinates cross-domain dependencies, preserves citations and clarification
+      requirements, and produces one user-facing response. Deterministic graph code restores
+      mandatory local-only, approval, or citation notices if synthesis omits them.</p>
+
+      <h3>13. Output guardrails validate the answer</h3>
+      <p><code>src/seniorcare_agents/guardrails/output.py</code> rejects claims that a real doctor,
+      pharmacy, transport company, or event organizer was contacted; that a booking occurred
+      without approval; or that medication should be started, stopped, substituted, or changed.
+      Unsafe output is replaced by a bounded safe response instead of being shown as a successful
+      result.</p>
+
+      <h3>14. Read-only responses return immediately</h3>
+      <p>For informational requests, the validated <code>final_response</code> returns through the
+      FastAPI <code>/chat</code> JSON response to <code>ui/app.py</code>. The UI records the answer in
+      its display state, reruns Streamlit, and renders the conversation. The API also persists the
+      bounded exchange so later turns can refer to verified prior context.</p>
+
+      <h3>15. Approval-required actions follow a separate write path</h3>
+      <p>Appointment, transportation, and permitted home-support writes first produce a proposal;
+      no operational record exists yet. <code>src/seniorcare_agents/graph/approvals.py</code> stores
+      that proposal as pending. When the user clicks Approve, the UI calls
+      <code>POST /actions/{{action_id}}/approve</code>. FastAPI delegates to
+      <code>ApprovalManager</code>, then <code>ToolGuardrail</code>, the MCP gateway/server, and the
+      appropriate local repository write. Before execution, the tool guardrail verifies explicit
+      human approval, a permitted Phase 1 action, simulation/local mode, action ownership, recipient
+      and case ownership, and trusted parameters. The resulting local entity is linked to its case,
+      audited, and returned to the UI. Rejection or a new superseding request leaves no booking.</p>
+
+      <h3>16. Compact observability spans every boundary</h3>
+      <p><code>src/seniorcare_agents/observability/terminal.py</code> emits correlated boundary
+      events for UI, API, session, guardrails, member resolution, orchestrator and specialist LLM
+      calls, MCP tools, RAG, synthesis, and approvals. Terminal output and
+      <code>application.log</code> retain timestamp with milliseconds, request ID, component,
+      operation, direction, selected agent/tool, duration, status, a small input/output summary,
+      and error information. Complete prompts, histories, member context, retrieved chunks, secrets,
+      and full structured arrays are deliberately excluded.</p>
+
+      <h2>Main and specialist graph nodes</h2>
+      {pre('''MAIN LANGGRAPH
+input_guardrails -> member_resolution -> orchestrator_plan_llm
+ -> validate_orchestrator_plan -> execute_specialist_subgraphs
+ -> orchestrator_synthesis_llm -> output_guardrails
+ -> [approval interrupt only when proposals exist]
+
+SPECIALIST LANGGRAPH
+specialist_plan_llm -> validate_tool_plan -> execute_mcp_reads
+ -> validate_retrieval -> specialist_synthesis_llm
+ -> validate_agent_result''','Figure 13. Exact graph-node execution order')}
+
+      <h2>Read-only trace example: meal assistance</h2>
+      {pre('''“Find meal-assistance programs for my father”
+ -> UI POST /chat with selected recipient
+ -> input/member guardrails validate ownership
+ -> orchestrator selects MealsFoodAgent
+ -> specialist plans search_meal_services + permitted food RAG
+ -> MCP server returns structured services and attributed chunks
+ -> specialist produces grounded options/contact fields that actually exist
+ -> orchestrator synthesis preserves citations
+ -> output guardrail -> API -> UI
+No proposal and no write.''','Figure 14. Read-only request trace')}
+
+      <h2>Approval trace example: appointment request</h2>
+      {pre('''“Book an orthopedic appointment for my father”
+ -> HealthcareAccessAgent reads providers + consistent available slots
+ -> specialist returns a proposed book_dummy_appointment action
+ -> output validation registers proposal; LangGraph interrupt exposes preview
+ -> /chat returns approval-required response; no appointment exists yet
+ -> user clicks Approve
+ -> POST /actions/{action_id}/approve
+ -> ApprovalManager -> ToolGuardrail -> MCP gateway/server
+ -> appointment_tools.py writes local appointment
+ -> case created/reused, appointment ID linked, audit written
+ -> approval JSON -> UI confirmation''','Figure 15. Approval-gated local-write trace')}
+
+      <p><b>Important boundary:</b> agents never open JSON files or call Actian directly. All data
+      access crosses the MCP gateway/server boundary. Medication, meal, social and case/risk agents
+      are read-only in Phase 1. Removed refill, meal-enrollment, event-registration, reminder and
+      ride-modification writes are not part of the current MCP surface.</p>
+    """, True))
+
+    parts.append(section("16", "Conversation, Follow-Ups and Grounded Responses", f"""
+      <p>A bounded, JSON-persisted session contains account ID, selected recipient, recent chat,
+      active case and pending proposal IDs, with TTL cleanup. The per-invocation LangGraph checkpointer
+      remains process-local. The current turn remains authoritative. Domain-scoped
       context allows “book transportation for APT1023” to reuse verified appointment details without
       allowing an old transportation question to hijack a new meal request.</p>
       {pre('''Existing appointments -> list_appointments -> provider enrichment -> active records
 Named medication -> extract name -> structured openFDA lookup -> product facts only
 Meal discovery -> structured services -> relevant food RAG -> detailed options
-Named source follow-up -> retrieve again -> match source name/title -> content + URL''','Figure 12. Grounded-response precedence')}
+Named source follow-up -> retrieve again -> match source name/title -> content + URL''','Figure 16. Grounded-response precedence')}
       <p>Verified operational and structured results cannot be discarded or contradicted by free-form
       synthesis. Appointment views exclude cancelled records and avoid unrelated Medicare citations.
       The current openFDA corpus is NDC/product data, not a complete approved safety label; the system
@@ -411,7 +652,8 @@ Named source follow-up -> retrieve again -> match source name/title -> content +
       Named-source follow-ups resolve the source name rather than assuming SRC1 is permanent.</p>
     """))
 
-    parts.append(section("16", "Transportation Coordination", f"""
+    parts.append(section("17", "Transportation Coordination", f"""
+      {image('images/elderly-care-nurse-helping-senior-wheel-chair-to-bed-71279626.webp', 'Accessible transportation planning must preserve the recipient’s explicit mobility requirements.')}
       <p>Transportation can support any eligible stored destination booking, not healthcare alone.
       An explicit tracking ID is required when the referenced appointment is unclear. The agent retrieves
       the owned source record and treats its destination, date and time as authoritative. It asks only for
@@ -421,16 +663,16 @@ Named source follow-up -> retrieve again -> match source name/title -> content +
  -> find eligible service and vehicle
  -> estimate travel duration
  -> pickup = appointment - travel - 15-minute arrival buffer
- -> preview -> approval -> local ride + linked case''','Figure 13. Transportation planning')}
+ -> preview -> approval -> local ride + linked case''','Figure 17. Transportation planning')}
       <p>The estimator uses local synthetic logic. It is not live maps, traffic, dispatch, fleet or
       transit-provider integration.</p>
     """))
 
-    parts.append(section("17", "Human Approval, Simulation and Case Linking", f"""
+    parts.append(section("18", "Human Approval, Simulation and Case Linking", f"""
       {pre('''LLM action proposal -> deterministic completion -> guardrails
  -> one approval preview -> explicit approve/reject
  -> approved MCP local write -> create/reuse case
- -> link entity ID -> audit -> UI refresh''','Figure 14. Approval boundary')}
+ -> link entity ID -> audit -> UI refresh''','Figure 18. Approval boundary')}
       <p>No appointment, ride, case or other domain record is created by a proposal. A new chat message
       supersedes an unapproved proposal and removes it from session/pending state. Approval revalidates
       ownership and executes once; repeated approval is rejected. User-facing labels omit “dummy” and
@@ -438,8 +680,8 @@ Named source follow-up -> retrieve again -> match source name/title -> content +
       A visible UI notice states that no external organization is contacted.</p>
     """))
 
-    parts.append(section("18", "Streamlit User Experience", f"""
-      {image('images/doctor-comforting-elderly-patient-medical-consultation_636346-1435.avif', 'Figure 15. Healthcare coordination remains person-centered and approval-driven.')}
+    parts.append(section("19", "Streamlit User Experience", f"""
+      {image('images/gettyimages-2216846787-612x612.jpg', 'Figure 19. The interface is designed around understandable, person-centered coordination.')}
       <p>The UI supports new/returning members, empty DOB inputs, 21+ validation, multiple recipient
       cards with IDs, a persistent recipient selector, conversation, approval previews, wrapped case
       cards, linked operational details and close/cancel controls. Registration/login hides after a
@@ -447,7 +689,7 @@ Named source follow-up -> retrieve again -> match source name/title -> content +
       response handling reports backend HTTP/non-JSON failures without crashing on JSON decoding.</p>
     """))
 
-    parts.append(section("19", "Guardrails, Privacy and Safety", f"""
+    parts.append(section("20", "Guardrails, Privacy and Safety", f"""
       {table(['Boundary','Examples'],[
         ['Input','Length, User ID, prompt injection, emergency classification'],
         ['Recipient','Account ownership, ambiguity, relationship consistency'],
@@ -457,14 +699,14 @@ Named source follow-up -> retrieve again -> match source name/title -> content +
         ['Agent result','Schema, action allowlist, required parameters, citations'],
         ['Approval','Owner revalidation, idempotency, local simulation'],
         ['Output','No unsupported clinical claims or external-execution claims'],
-      ],'Table 9. Layered guardrails')}
+      ],'Table 10. Layered guardrails')}
       <p>Emergency language receives direction to appropriate emergency help; the application cannot
       dispatch. DOB, API keys, authorization headers and complete vectors are excluded from standard
       logs and responses. The demo User ID model is not production identity, consent or delegated
       authorization.</p>
     """))
 
-    parts.append(section("20", "Observability, Audit and Recovery", """
+    parts.append(section("21", "Observability, Audit and Recovery", """
       <p>UI, API, guardrails, orchestrator planning, specialist planning, MCP tools, RAG, synthesis,
       approvals and errors emit compact JSON boundary events to terminal and <code>application.log</code>.
       Events correlate by request ID and use <code>MM:DD:YYYY HH:MM:SS.mmm</code>. Logs redact sensitive
@@ -472,12 +714,13 @@ Named source follow-up -> retrieve again -> match source name/title -> content +
       and LLM envelopes to bounded counts/shapes. Events retain only correlation, component/operation,
       direction, selected agent/tool, duration, status, a small summary and errors.</p>
       <p>Durable audit JSONL is distinct from ephemeral flow logs and retrieval traces. The ingestion
-      manifest supports resume/idempotency. Runtime sessions/checkpoints are in-memory and therefore
-      lost on API restart; durable approved operational JSON remains. MCP reads use bounded retries,
+      manifest supports resume/idempotency. Bounded chat/session state persists to configured runtime
+      JSON with TTL cleanup; individual graph invocation checkpoints remain process-local. Durable
+      approved operational JSON remains behind MCP. MCP reads use bounded retries,
       while invalid plans/results fail safely rather than expanding permissions.</p>
     """))
 
-    parts.append(section("21", "Evaluation, Benchmarks and Evidence", f"""
+    parts.append(section("22", "Evaluation, Benchmarks and Evidence", f"""
       <p>Evaluation has four layers: deterministic tests/contracts, golden questions and agent
       benchmarks, optional live OpenAI/LLM-as-judge evaluation, and human-review packets. Normal tests
       mock paid/external services.</p>
@@ -485,17 +728,17 @@ Named source follow-up -> retrieve again -> match source name/title -> content +
         ['Routing accuracy','>= 0.80','1.00 across 15 recorded routing cases','Pass for recorded dataset'],
         ['Agent selection','>= 0.80','1.00 across 15 recorded routing cases','Pass for recorded dataset'],
         ['Recipient guardrail','1.00','1.00 across 2 recorded cases','Pass; small sample'],
-        ['Unit/contract suite','No failures','106 passed, 1 live test skipped on 2026-08-31','Pass locally'],
+        ['Unit/contract suite','No failures','108 passed, 1 live test skipped on 2026-08-31','Pass locally'],
         ['Usable outcomes','>= 8/10','No completed human outcome report found','Not demonstrated'],
         ['Task completion','< 5 minutes','No completed timed study found','Not demonstrated'],
         ['Human rating','>= 4/5','No completed human summary found','Not demonstrated'],
-      ],'Table 10. Success criteria and evidence')}
+      ],'Table 11. Success criteria and evidence')}
       <p>Live local chat checks confirmed grounded appointment APT1023 output, metformin lookup through
       <code>search_medication_references(name=metformin)</code>, and detailed meal-service output. These
       tests do not prove current external OpenAI, Nebius, Actian, CMS or FDA availability.</p>
     """))
 
-    parts.append(section("22", "Operational Runbook", f"""
+    parts.append(section("23", "Operational Runbook", f"""
       <h2>Install and configure</h2>
       {pre('''cd /Users/kabilansubramaniam/Documents/Workspace/AgenticAI_Wk3_Project
 python3.12 -m venv .venv
@@ -537,7 +780,7 @@ mypy src/seniorcare_agents/agents/llm_specialist.py
 seniorcare-eval''','Command 4. Inspection and validation')}
     """, True))
 
-    parts.append(section("23", "Troubleshooting", table(
+    parts.append(section("24", "Troubleshooting", table(
         ["Symptom","Diagnosis","Resolution"], [
           ["Port already allocated","Existing process/container owns 6573, 8000 or 8001","Use lsof/docker ps; reuse or stop the exact owner; do not start duplicates."],
           ["ModuleNotFoundError","Installed console script is stale or editable path hidden","python -m pip install . --no-deps --no-build-isolation --force-reinstall"],
@@ -546,19 +789,19 @@ seniorcare-eval''','Command 4. Inspection and validation')}
           ["Vector retrieval unavailable","Actian/Nebius unavailable","Check Docker and credentials; BM25 may provide degraded public retrieval."],
           ["HTTP 500/non-JSON","Backend exception","Inspect seniorcare-api terminal and request-correlated application.log."],
           ["Old code still runs","Non-editable installed wheel","Force reinstall package, then restart MCP/API."],
-        ], "Table 11. Troubleshooting guide"
-    )))
+        ], "Table 12. Troubleshooting guide"
+    ), True))
 
-    parts.append(section("24", "Implementation Status and Limitations", table(
-        ["Capability","Status","Evidence / limitation"], statuses, "Table 12. Implementation status"
+    parts.append(section("25", "Implementation Status and Limitations", table(
+        ["Capability","Status","Evidence / limitation"], statuses, "Table 13. Implementation status"
     ) + """
       <p>Provider availability, travel estimation, vehicles, appointments, rides and writes are local
       study data. Community events are limited to collected/static or synthetic records. Live maps,
       notifications, real scheduling, pharmacy ordering, meal ordering, transport dispatch,
       authorization, consent/delegation and production regulatory controls remain future work.</p>
-    """))
+    """, True))
 
-    parts.append(section("25", "Package and File Responsibility Reference", f"""
+    parts.append(section("26", "Package and File Responsibility Reference", f"""
       <p>The repository has three cooperating Python packages. <code>seniorcare_ingestion</code>
       acquires and indexes attributed public knowledge. <code>seniorcare_runtime</code> implements
       repositories, domain operations and services behind MCP. <code>seniorcare_agents</code> owns the
@@ -575,7 +818,7 @@ seniorcare-eval''','Command 4. Inspection and validation')}
         ['Prompts/DataIngestion.md','Detailed ingestion, normalization, embedding, Actian and corpus-quality specification.'],
         ['Prompts/DeepAgentsImplementation.md','LangGraph/MCP agent runtime, prompts, tools, guardrails, approval and evaluation specification.'],
         ['Prompts/ApplicationDocumentGeneration.md','Accuracy and content specification for this architecture document.'],
-      ],'Table 13. Root, configuration and specification files')}
+      ],'Table 14. Root, configuration and specification files')}
 
       <h2>Public-knowledge ingestion package</h2>
       {table(['Package / file','Responsibility'],[
@@ -593,7 +836,7 @@ seniorcare-eval''','Command 4. Inspection and validation')}
         ['src/seniorcare_ingestion/pipeline.py','End-to-end collect/process/chunk/embed/index orchestration, idempotency, resume, dry-run and validation.'],
         ['src/seniorcare_ingestion/utils.py','Shared hashing, JSONL/file, URL, timestamp and logging helpers.'],
         ['src/seniorcare_ingestion/__init__.py','Package marker and public ingestion package boundary.'],
-      ],'Table 14. seniorcare_ingestion files')}
+      ],'Table 15. seniorcare_ingestion files')}
 
       <h2>Agent application and orchestration package</h2>
       {table(['Package / file','Responsibility'],[
@@ -609,7 +852,7 @@ seniorcare-eval''','Command 4. Inspection and validation')}
         ['src/seniorcare_agents/graph/router.py','Invokes orchestrator planning and validates/retries typed routing output; it is not the primary keyword intent router.'],
         ['src/seniorcare_agents/graph/approvals.py','Pending action manager, approval ownership, idempotent execution state and rejection/supersession behavior.'],
         ['src/seniorcare_agents/models/contracts.py','Pydantic contracts for plans, stages, findings, sources, actions, tool calls, risks and final agent results.'],
-      ],'Table 15. API, UI, agents and graph files')}
+      ],'Table 16. API, UI, agents and graph files')}
 
       {table(['Package / file','Responsibility'],[
         ['src/seniorcare_agents/mcp/gateway.py','MultiServerMCPClient wrapper for Streamable HTTP discovery, schema-bound calls, caching, retry and observability.'],
@@ -626,19 +869,19 @@ seniorcare-eval''','Command 4. Inspection and validation')}
         ['src/seniorcare_agents/guardrails/agents.py','Specialist input/output, recipient, action and RAG-category policy enforcement.'],
         ['src/seniorcare_agents/guardrails/tools.py','MCP tool schemas, read/write restrictions and trusted-argument validation.'],
         ['src/seniorcare_agents/guardrails/output.py','Final response, citation, approval and unsupported-claim checks.'],
-      ],'Table 16. MCP, retrieval and guardrail files')}
+      ],'Table 17. MCP, retrieval and guardrail files')}
 
       {table(['Package / file','Responsibility'],[
-        ['src/seniorcare_agents/services/session_store.py','TTL in-memory chat history, recipient selection, rolling context, active case and pending-action state.'],
+        ['src/seniorcare_agents/services/session_store.py','Bounded JSON-persisted chat history, recipient selection, active case and pending-action state with TTL cleanup.'],
         ['src/seniorcare_agents/services/action_store.py','Local pending/proposed action persistence and supersession support.'],
         ['src/seniorcare_agents/services/citations.py','Creates response-local SRC labels from trusted retrieved chunks.'],
-        ['src/seniorcare_agents/observability/events.py','Request-correlated JSON boundary events, redaction and application.log output.'],
-        ['src/seniorcare_agents/observability/terminal.py','Concise terminal presentation for component input/output/error events.'],
+        ['src/seniorcare_agents/observability/events.py','Durable runtime observability JSONL event service used by graph milestones.'],
+        ['src/seniorcare_agents/observability/terminal.py','Compact request-correlated terminal/application.log boundary events with redaction and bounded summaries.'],
         ['src/seniorcare_agents/evals/runner.py','seniorcare-eval CLI for golden datasets, code evaluators, optional judge and human packets.'],
         ['src/seniorcare_agents/evals/agent_evaluators.py','Per-agent safety, grounding, routing, tool and contract evaluators.'],
         ['src/seniorcare_agents/evals/metrics.py','Aggregates routing, benchmark, code, judge and human success metrics.'],
         ['Package __init__.py files','Declare package boundaries and selectively re-export stable public classes/functions.'],
-      ],'Table 17. Session, observability and evaluation files')}
+      ],'Table 18. Session, observability and evaluation files')}
 
       <h2>MCP backend runtime package</h2>
       {table(['Package / file','Responsibility'],[
@@ -654,7 +897,7 @@ seniorcare-eval''','Command 4. Inspection and validation')}
         ['src/seniorcare_runtime/repositories/social_repository.py','Social activities and registration records.'],
         ['src/seniorcare_runtime/repositories/home_support_repository.py','Home-support request storage and recipient filtering.'],
         ['src/seniorcare_runtime/repositories/case_repository.py','Case lifecycle, entity linking, recipient ownership, due closure and status transitions.'],
-      ],'Table 18. Runtime configuration and repositories')}
+      ],'Table 19. Runtime configuration and repositories')}
 
       {table(['Package / file','Responsibility'],[
         ['src/seniorcare_runtime/tools/appointment_tools.py','Local appointment booking/cancellation/rescheduling with provider-slot validation and audit.'],
@@ -664,7 +907,7 @@ seniorcare-eval''','Command 4. Inspection and validation')}
         ['src/seniorcare_runtime/services/senior_context_service.py','Combines member-owned operational records into a recipient-aware context projection.'],
         ['src/seniorcare_runtime/services/risk_detection_service.py','Deterministic rule-based overdue, medication, ride and unresolved-task risk flags.'],
         ['src/seniorcare_runtime/services/audit_service.py','Append-only local audit events for simulated operations and case changes.'],
-      ],'Table 19. Runtime tools and services')}
+      ],'Table 20. Runtime tools and services')}
 
       <h2>Data, evaluation, tests and generated artifacts</h2>
       {table(['Path','Responsibility'],[
@@ -683,10 +926,10 @@ seniorcare-eval''','Command 4. Inspection and validation')}
         ['images/','Senior-care imagery used by Streamlit and the application document.'],
         ['application.log','Generated request-correlated observability output, not application source.'],
         ['__pycache__ / *.pyc / *.egg-info','Generated interpreter/build metadata; safely regenerated and excluded from the maintained code catalog.'],
-      ],'Table 20. Data, tests and generated artifacts')}
+      ],'Table 21. Data, tests and generated artifacts')}
     """, True))
 
-    parts.append(section("26", "Future Roadmap", f"""
+    parts.append(section("27", "Future Roadmap", f"""
       {table(['Horizon','Enhancement','Safety prerequisite'],[
         ['Near term','Durable database-backed sessions/checkpoints','Encryption, retention and migration policy'],
         ['Near term','Broader label/recall ingestion','Explicit official schemas and freshness monitoring'],
@@ -694,17 +937,17 @@ seniorcare-eval''','Command 4. Inspection and validation')}
         ['Medium term','Production identity and delegation','OAuth/OIDC, MFA, consent and recipient authorization'],
         ['Medium term','Live maps and provider integrations','Vendor contracts, rate limits and explicit confirmation'],
         ['Long term','Real transactions','Compliance, audit, rollback, incident response and legal review'],
-      ],'Table 21. Future roadmap')}
+      ],'Table 22. Future roadmap')}
     """))
 
-    parts.append(section("27", "Glossary", table(["Term","Definition"], glossary, "Table 22. Glossary"), True))
-    parts.append(section("28", "Conclusion", """
+    parts.append(section("28", "Glossary", table(["Term","Definition"], glossary, "Table 23. Glossary"), True))
+    parts.append(section("29", "Conclusion", """
       <p>SeniorCare Connect demonstrates a real agentic system rather than a single prompt or isolated
       RAG call. Explicit LangGraph workflows coordinate reusable specialists; MCP isolates tools and
       evidence; hybrid retrieval grounds public knowledge; deterministic controls protect recipient
       ownership and provenance; and human approval gates every supported local write. Its current
       strength is a safe, inspectable study platform. Its limitations—simulation-only mutations,
-      ephemeral sessions and incomplete live integrations—are explicit and form a practical roadmap
+      process-local graph checkpoints and incomplete live integrations—are explicit and form a practical roadmap
       toward production readiness.</p>
     """))
 
@@ -752,19 +995,34 @@ def render_pdf(html_text: str, output: Path) -> None:
     writer.close()
 
     document = pymupdf.open(output)
-    toc: list[list[object]] = []
+    def normalized_pdf_text(value: str) -> str:
+        return (
+            " ".join(value.split())
+            .replace("ﬂ", "fl")
+            .replace("ﬁ", "fi")
+            .replace("ﬀ", "ff")
+            .replace("ﬃ", "ffi")
+            .replace("ﬄ", "ffl")
+        )
+
+    page_texts: list[str] = []
     for index, page in enumerate(document):
         page.insert_text((45, 28), "SeniorCare Connect · Application Design & Technical Architecture", fontsize=7, color=(0.25, 0.4, 0.42))
         page.insert_text((page_rect.width - 85, page_rect.height - 24), f"Page {index + 1}", fontsize=7, color=(0.25, 0.4, 0.42))
-        text = page.get_text("text")
-        for line in text.splitlines():
-            if line and line[0].isdigit() and ". " in line and len(line) < 90:
-                number = line.split(".", 1)[0]
-                if number.isdigit():
-                    entry = [1, line.strip(), index + 1]
-                    if entry not in toc:
-                        toc.append(entry)
-                    break
+        page_texts.append(normalized_pdf_text(page.get_text("text")))
+    toc: list[list[object]] = []
+    headings = [
+        normalized_pdf_text(node.get_text(" ", strip=True))
+        for node in BeautifulSoup(html_text, "html.parser").find_all("h1")
+        if re.match(r"^\d+\. ", " ".join(node.get_text(" ", strip=True).split()))
+    ]
+    start_page = 0
+    for heading in headings:
+        for page_index in range(start_page, len(page_texts)):
+            if heading in page_texts[page_index]:
+                toc.append([1, heading, page_index + 1])
+                start_page = page_index
+                break
     document.set_metadata({"title": TITLE, "author": "Kabilan Subramaniam", "subject": "Multi-Agent Senior Care Coordination & Resource Navigator", "keywords": "LangGraph, MCP, RAG, Senior Care, Actian, Nebius"})
     if toc:
         document.set_toc(toc)

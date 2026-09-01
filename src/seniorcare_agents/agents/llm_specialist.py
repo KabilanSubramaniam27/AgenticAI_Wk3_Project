@@ -215,6 +215,17 @@ application. Do not select write tools. Do not invent tool names, IDs, or missin
 stay within these categories: {rag_categories}. The next phase will execute the selected tools and
 synthesize the result.
 
+The tool_arguments value must be an object keyed by selected tool name. Each value must itself be
+an object of arguments. Example:
+{{
+  "selected_tools": ["search_providers", "list_available_slots"],
+  "tool_arguments": {{
+    "search_providers": {{"specialty": "orthopedics", "limit": 10}},
+    "list_available_slots": {{}}
+  }}
+}}
+Never flatten argument names such as specialty, county, or limit directly under tool_arguments.
+
 DOMAIN-SPECIFIC PLANNING INSTRUCTIONS FOR THIS AGENT:
 {domain_planning_instructions}
 
@@ -399,7 +410,9 @@ class LangGraphSpecialist:
             raise
         result = AgentResult.model_validate(response["result"])
         self._discard_noop_actions(result)
-        if result.proposed_actions and not self._explicit_write_request(query):
+        if result.proposed_actions and not self._explicit_write_context(
+            query, conversation_history or []
+        ):
             result.proposed_actions = []
             result.warnings.append(
                 "An unsolicited mutation proposal was removed; the request was informational."
@@ -549,15 +562,13 @@ class LangGraphSpecialist:
             )
             plan = SpecialistPlan.model_validate(raw_plan)
             ignored_internal_fields = [
-                item
-                for item in plan.missing_information
-                if self._missing_field_key(item) in SYSTEM_RESOLVABLE_FIELDS
+                item for item in plan.missing_information if self._mentions_system_field(item)
             ]
             if ignored_internal_fields:
                 plan.missing_information = [
                     item
                     for item in plan.missing_information
-                    if self._missing_field_key(item) not in SYSTEM_RESOLVABLE_FIELDS
+                    if not self._mentions_system_field(item)
                 ]
                 flow_event(
                     "guardrail",
@@ -576,6 +587,8 @@ class LangGraphSpecialist:
                 selected_tools=self._fallback_tools(),
                 confidence=0.5,
             )
+            if self.key == "healthcare":
+                plan = self._normalize_healthcare_plan(plan, state["query"])
         flow_event("llm", f"{self.name}_planning", "output", plan.model_dump())
         return {"plan": plan.model_dump(mode="json")}
 
@@ -583,6 +596,11 @@ class LangGraphSpecialist:
     def _missing_field_key(value: str) -> str:
         """Normalize a planner's missing-data label for policy comparison."""
         return value.strip().casefold().replace(" ", "_").rstrip("?:.")
+
+    @classmethod
+    def _mentions_system_field(cls, value: str) -> bool:
+        normalized = re.sub(r"[^a-z0-9]+", "_", value.casefold()).strip("_")
+        return any(field in normalized for field in SYSTEM_RESOLVABLE_FIELDS)
 
     def _validate_plan_node(self, state: SpecialistGraphState) -> dict[str, Any]:
         plan = SpecialistPlan.model_validate(state["plan"])
@@ -805,6 +823,8 @@ class LangGraphSpecialist:
             # Citations are security-sensitive provenance, not generative content. The LLM may
             # summarize structured provider/API records in findings, but only an actual RAG tool
             # result can become a RetrievedChunk citation.
+        if self.key == "healthcare" and self._explicit_write_request(state["query"]):
+            result = self._ensure_grounded_appointment_proposal(result, state)
         # Provenance is always attached from trusted MCP output, including deterministic
         # domain renderers. It is never accepted from model-authored content.
         result.retrieved_sources = (
@@ -833,6 +853,75 @@ class LangGraphSpecialist:
         )
         return {"result": result.model_dump(mode="json")}
 
+    def _ensure_grounded_appointment_proposal(
+        self, result: AgentResult, state: SpecialistGraphState
+    ) -> AgentResult:
+        """Recover an omitted proposal using only a verified provider/available-slot pair."""
+        if any(
+            action.action_type == "book_dummy_appointment" for action in result.proposed_actions
+        ):
+            return result
+        retrieved = state.get("retrieval_results", {})
+        raw_providers = retrieved.get("search_providers", [])
+        raw_slots = retrieved.get("list_available_slots", [])
+        providers = (
+            [row for row in raw_providers if isinstance(row, dict)]
+            if isinstance(raw_providers, list)
+            else []
+        )
+        slots = (
+            [row for row in raw_slots if isinstance(row, dict)]
+            if isinstance(raw_slots, list)
+            else []
+        )
+        provider_by_id = {str(row["providerId"]): row for row in providers if row.get("providerId")}
+        pair = next(
+            (
+                (provider_by_id[str(slot["providerId"])], slot)
+                for slot in slots
+                if slot.get("status") == "available"
+                and str(slot.get("providerId") or "") in provider_by_id
+                and slot.get("availabilityId")
+            ),
+            None,
+        )
+        if pair is None:
+            return result
+        provider, slot = pair
+        provider_name = str(provider.get("providerName") or provider["providerId"])
+        schedule = f"{slot.get('availableDate')} at {slot.get('availableTime')}"
+        result.status = "success"
+        result.summary = (
+            f"I found {provider_name} and a verified available appointment on {schedule}. "
+            "The appointment is ready for your approval."
+        )
+        result.proposed_actions = [
+            ProposedAction(
+                action_id=f"ACT-{uuid4().hex[:12]}",
+                action_type="book_dummy_appointment",
+                description=f"Appointment with {provider_name} on {schedule}",
+                parameters={
+                    "provider_id": provider["providerId"],
+                    "availability_id": slot["availabilityId"],
+                    "appointment_date": slot.get("availableDate"),
+                    "appointment_time": slot.get("availableTime"),
+                    "reason": state["query"],
+                },
+                agent_name=self.name,
+                user_id=state["user_id"],
+                senior_id=state["user_id"],
+                recipient_id=state.get("recipient_id"),
+                case_id=state.get("case_id"),
+            )
+        ]
+        result.warnings = [
+            warning
+            for warning in result.warnings
+            if "missing" not in warning.casefold() and "unable to find" not in warning.casefold()
+        ]
+        result.confidence = 1.0
+        return result
+
     def _validate_result_node(self, state: SpecialistGraphState) -> dict[str, Any]:
         result = AgentResult.model_validate(state["result"])
         flow_event("guardrail", f"{self.name}_result_validation", "input", result.model_dump())
@@ -859,15 +948,18 @@ class LangGraphSpecialist:
             "list_available_slots",
             "find_available_transportation",
         }
-        return sorted(set(READ_TOOL_POLICIES[self.key]).difference(dependent))
+        tools = set(READ_TOOL_POLICIES[self.key]).difference(dependent)
+        # Provider availability accepts an optional provider filter, so healthcare fallback can
+        # safely retrieve all available slots and join them to search results after execution.
+        if self.key == "healthcare" and "list_available_slots" in self._tools:
+            tools.add("list_available_slots")
+        return sorted(tools)
 
     def _normalize_healthcare_plan(self, plan: SpecialistPlan, query: str) -> SpecialistPlan:
         """Resolve provider names through search tools instead of treating them as IDs."""
         if self._is_appointment_list_query(query):
             plan.selected_tools = [
-                tool
-                for tool in ("get_member", "list_appointments")
-                if tool in self._tools
+                tool for tool in ("get_member", "list_appointments") if tool in self._tools
             ]
             plan.tool_arguments = {
                 tool: plan.tool_arguments.get(tool, {}) for tool in plan.selected_tools
@@ -875,7 +967,16 @@ class LangGraphSpecialist:
             plan.missing_information = []
             return plan
         requested_provider = self._provider_name_for_query(query)
-        if not requested_provider or not self._explicit_write_request(query):
+        specialty = self._specialty_for_query(query)
+        provider_request = bool(
+            re.search(r"\b(?:find|search|show|list|book|schedule|need|want)\b", query, re.I)
+            and re.search(
+                r"\b(?:doctor|provider|physician|specialist|appointment|orthopedic)\b",
+                query,
+                re.I,
+            )
+        )
+        if not requested_provider and not specialty and not provider_request:
             return plan
 
         # LLMs commonly place a display name such as ``Dr. Carter`` in an ID field.
@@ -892,25 +993,34 @@ class LangGraphSpecialist:
         plan.selected_tools = selected
         plan.tool_arguments.pop("get_provider", None)
         plan.tool_arguments.pop("get_available_slot", None)
-        plan.tool_arguments["search_providers"] = {
-            "specialty": self._specialty_for_query(query),
-            "limit": 10,
-        }
+        plan.tool_arguments["search_providers"] = {"specialty": specialty, "limit": 10}
         plan.tool_arguments["list_available_slots"] = {}
         plan.missing_information = [
-            item
-            for item in plan.missing_information
-            if self._missing_field_key(item) not in {"provider_id", "availability_id"}
+            item for item in plan.missing_information if not self._mentions_system_field(item)
         ]
         return plan
 
     @staticmethod
     def _provider_name_for_query(query: str) -> str | None:
-        match = re.search(r"\b(?:Dr\.|Doctor)\s+[A-Z][A-Za-z'-]+", query, flags=re.IGNORECASE)
+        # ``doctor`` is also a common noun ("find a doctor for my father").
+        # Exclude grammatical words so they cannot become fictitious provider
+        # names such as ``Dr. For`` and filter out all valid search results.
+        match = re.search(r"\b(?:Dr\.|Doctor)\s+([A-Z][A-Za-z'-]+)", query, flags=re.IGNORECASE)
         if not match:
             return None
-        value = match.group(0)
-        return f"Dr. {value.split(None, 1)[1].title()}"
+        surname = match.group(1)
+        if surname.casefold() in {
+            "appointment",
+            "for",
+            "in",
+            "near",
+            "provider",
+            "that",
+            "to",
+            "with",
+        }:
+            return None
+        return f"Dr. {surname.title()}"
 
     def _trusted_tool_arguments(
         self,
@@ -969,6 +1079,12 @@ class LangGraphSpecialist:
         results = state.get("retrieval_results", {})
         if self.key == "healthcare" and self._is_appointment_list_query(query):
             return self._appointment_list_result(results)
+        if (
+            self.key == "healthcare"
+            and self._is_provider_discovery_query(query)
+            and not self._explicit_write_request(query)
+        ):
+            return self._provider_discovery_result(results)
         if self.key == "medication" and self._medication_name_for_query(query):
             return self._medication_reference_result(query, results)
         if self.key == "meals":
@@ -980,11 +1096,89 @@ class LangGraphSpecialist:
         return None
 
     @staticmethod
+    def _is_provider_discovery_query(query: str) -> bool:
+        text = query.casefold()
+        return bool(
+            re.search(r"\b(?:find|search|show|list|other|available)\b", text)
+            and re.search(r"\b(?:doctor|provider|physician|specialist|orthopedic)\b", text)
+        )
+
+    def _provider_discovery_result(self, results: dict[str, Any]) -> AgentResult:
+        """Render verified provider/slot pairs so synthesis cannot discard directory facts."""
+        raw_providers = results.get("search_providers", [])
+        raw_slots = results.get("list_available_slots", [])
+        providers = (
+            [row for row in raw_providers if isinstance(row, dict)]
+            if isinstance(raw_providers, list)
+            else []
+        )
+        slots = (
+            [row for row in raw_slots if isinstance(row, dict)]
+            if isinstance(raw_slots, list)
+            else []
+        )
+        slots_by_provider: dict[str, list[dict[str, Any]]] = {}
+        for slot in slots:
+            provider_id = str(slot.get("providerId") or "")
+            if provider_id and slot.get("status") == "available":
+                slots_by_provider.setdefault(provider_id, []).append(slot)
+        if not providers:
+            return AgentResult(
+                agent_name=self.name,
+                status="partial",
+                summary="I did not find a matching provider in the verified local provider records.",
+                confidence=1.0,
+            )
+        lines = ["I found these matching providers in the verified local records:"]
+        related_ids: list[str] = []
+        for provider in providers[:10]:
+            provider_id = str(provider.get("providerId") or "")
+            name = str(provider.get("providerName") or provider_id or "Provider name unavailable")
+            specialty = provider.get("specialty")
+            facility = provider.get("facilityName")
+            location = ", ".join(
+                str(value)
+                for value in (provider.get("city"), provider.get("state"), provider.get("zipCode"))
+                if value
+            )
+            details = [str(value) for value in (specialty, facility, location) if value]
+            line = f"- {name} ({provider_id})"
+            if details:
+                line += " — " + "; ".join(details)
+            provider_slots = sorted(
+                slots_by_provider.get(provider_id, []),
+                key=lambda row: (
+                    str(row.get("availableDate", "")),
+                    str(row.get("availableTime", "")),
+                ),
+            )
+            if provider_slots:
+                rendered_slots = ", ".join(
+                    f"{row.get('availableDate')} at {row.get('availableTime')} ({row.get('availabilityId')})"
+                    for row in provider_slots[:3]
+                )
+                line += f". Available: {rendered_slots}."
+            else:
+                line += ". No verified slot is currently available."
+            lines.append(line)
+            if provider_id:
+                related_ids.append(provider_id)
+        return AgentResult(
+            agent_name=self.name,
+            status="success",
+            summary="\n".join(lines),
+            related_entity_ids=related_ids,
+            confidence=1.0,
+        )
+
+    @staticmethod
     def _is_appointment_list_query(query: str) -> bool:
         text = query.casefold()
         return bool(
             re.search(r"\b(?:show|list|view|see|check|what are)\b", text)
-            and re.search(r"\b(?:existing|current|scheduled|upcoming|my|father|mother|dad|mom)", text)
+            and re.search(
+                r"\b(?:existing|current|scheduled|upcoming|my|father|mother|dad|mom)", text
+            )
             and re.search(r"\b(?:doctor|provider|medical)?\s*appointments?\b", text)
         )
 
@@ -1013,7 +1207,9 @@ class LangGraphSpecialist:
             appointment_id = str(row.get("appointmentId", "Not provided"))
             raw_provider = row.get("provider")
             provider: dict[str, Any] = raw_provider if isinstance(raw_provider, dict) else {}
-            provider_name = provider.get("providerName") or row.get("providerName") or row.get("providerId")
+            provider_name = (
+                provider.get("providerName") or row.get("providerName") or row.get("providerId")
+            )
             specialty = provider.get("specialty")
             facility = provider.get("facilityName") or provider.get("organizationName")
             location = ", ".join(
@@ -1025,9 +1221,14 @@ class LangGraphSpecialist:
             if specialty:
                 provider_text += f" ({specialty})"
             place = ", ".join(value for value in (facility, location) if value)
-            schedule = " ".join(
-                str(value) for value in (row.get("appointmentDate"), row.get("appointmentTime")) if value
-            ) or "Date/time not recorded"
+            schedule = (
+                " ".join(
+                    str(value)
+                    for value in (row.get("appointmentDate"), row.get("appointmentTime"))
+                    if value
+                )
+                or "Date/time not recorded"
+            )
             reason = row.get("reason") or row.get("appointmentReason") or "Reason not recorded"
             status = str(row.get("status", "unknown")).replace("_", " ").title()
             line = f"- {appointment_id} — {status} — {schedule} — {provider_text}"
@@ -1060,9 +1261,7 @@ class LangGraphSpecialist:
                     return candidate
         return None
 
-    def _medication_reference_result(
-        self, query: str, results: dict[str, Any]
-    ) -> AgentResult:
+    def _medication_reference_result(self, query: str, results: dict[str, Any]) -> AgentResult:
         medication = self._medication_name_for_query(query) or "the requested medication"
         value = results.get("search_medication_references", [])
         rows = value if isinstance(value, list) else [value]
@@ -1096,8 +1295,17 @@ class LangGraphSpecialist:
             form = row.get("dosage_form")
             routes = row.get("route") or []
             ndc = row.get("product_ndc")
-            details = [f"generic: {generic}" if generic else None, f"manufacturer: {manufacturer}" if manufacturer else None]
-            details.extend([f"form: {form}" if form else None, f"route: {', '.join(routes)}" if routes else None, f"NDC: {ndc}" if ndc else None])
+            details = [
+                f"generic: {generic}" if generic else None,
+                f"manufacturer: {manufacturer}" if manufacturer else None,
+            ]
+            details.extend(
+                [
+                    f"form: {form}" if form else None,
+                    f"route: {', '.join(routes)}" if routes else None,
+                    f"NDC: {ndc}" if ndc else None,
+                ]
+            )
             lines.append(f"- {name} — " + "; ".join(item for item in details if item))
         lines.append(
             "For contraindications, boxed warnings, interactions, or individual advice, consult the "
@@ -1107,7 +1315,9 @@ class LangGraphSpecialist:
             agent_name=self.name,
             status="success",
             summary="\n".join(lines),
-            related_entity_ids=[str(row["medication_id"]) for row in references[:5] if row.get("medication_id")],
+            related_entity_ids=[
+                str(row["medication_id"]) for row in references[:5] if row.get("medication_id")
+            ],
             confidence=1.0,
         )
 
@@ -1133,7 +1343,9 @@ class LangGraphSpecialist:
             name = row.get("serviceName") or "Unnamed meal service"
             service_type = str(row.get("serviceType", "service")).replace("_", " ")
             location = ", ".join(
-                str(value) for value in (row.get("serviceArea"), row.get("city"), row.get("zipCode")) if value
+                str(value)
+                for value in (row.get("serviceArea"), row.get("city"), row.get("zipCode"))
+                if value
             )
             details = [service_type]
             if location:
@@ -1172,7 +1384,9 @@ class LangGraphSpecialist:
         # A displayed citation marker can be followed by its title/source name. Match that
         # human-readable name; never assume SRC1 is stable across requests.
         if not named:
-            named = [source for source in sources if source.title and source.title.casefold() in text]
+            named = [
+                source for source in sources if source.title and source.title.casefold() in text
+            ]
         if not named:
             return None
         source = named[0]
@@ -1249,7 +1463,10 @@ class LangGraphSpecialist:
         """Require explicit mutation language before accepting an LLM-proposed action."""
         patterns = {
             "healthcare": r"\b(?:book|schedule|make|reschedule|cancel)\b.*\bappointment\b",
-            "transportation": r"\b(?:book|schedule|arrange|reserve)\b.*\b(?:ride|transport)",
+            "transportation": (
+                r"\b(?:book|schedule|arrange|reserve|request|need|want)\b"
+                r".*\b(?:ride|transport)"
+            ),
             "medication": r"\b(?:request|order|submit|renew)\b.*\brefill\b",
             "meals": r"\b(?:enroll|apply|sign\s*up|register|order)\b",
             "social": r"\b(?:register|sign\s*up|join|enroll)\b",
@@ -1258,13 +1475,33 @@ class LangGraphSpecialist:
         }
         return bool(re.search(patterns[self.key], query.casefold()))
 
+    def _explicit_write_context(
+        self, query: str, conversation_history: list[dict[str, str]]
+    ) -> bool:
+        """Preserve approval intent while the user answers required follow-up questions.
+
+        A booking often spans several turns: the initial user request authorizes a
+        proposal, while later turns only provide an address or accessibility answer.
+        Those answers must not be mistaken for a new informational request. Only user
+        messages are considered, and an actual write still requires human approval.
+        """
+        if self._explicit_write_request(query):
+            return True
+        recent_user_messages = [
+            str(message.get("content", ""))
+            for message in conversation_history[-6:]
+            if message.get("role") == "user"
+        ]
+        return any(self._explicit_write_request(message) for message in recent_user_messages)
+
     async def _complete_appointment_parameters(
         self, proposed: Any, query: str, member: dict[str, Any]
     ) -> None:
         """Deterministically bind a local provider and open slot to an LLM proposal."""
         parameters = proposed.parameters
-        if not parameters.get("reason"):
-            parameters["reason"] = query.strip()
+        parameters["reason"] = self._user_facing_appointment_reason(
+            str(parameters.get("reason") or query)
+        )
 
         provider_id = parameters.get("provider_id")
         availability_id = parameters.get("availability_id")
@@ -1335,6 +1572,22 @@ class LangGraphSpecialist:
                 return
 
     @staticmethod
+    def _user_facing_appointment_reason(value: str) -> str:
+        """Strip agent-only routing instructions before persisting appointment details."""
+        reason = value.strip()
+        marker = re.search(r"\bPrevious request:\s*", reason, flags=re.IGNORECASE)
+        if marker:
+            reason = reason[marker.end() :]
+        reason = re.split(
+            r"\s*\.?\s*Resolve\s+provider[_ ]id\b",
+            reason,
+            maxsplit=1,
+            flags=re.IGNORECASE,
+        )[0]
+        reason = re.sub(r"\.{2,}$", ".", reason).strip()
+        return reason.rstrip(".") or "Doctor appointment"
+
+    @staticmethod
     def _first_available_slot(value: Any) -> dict[str, Any] | None:
         if not isinstance(value, list):
             return None
@@ -1353,7 +1606,15 @@ class LangGraphSpecialist:
     def _specialty_for_query(query: str) -> str | None:
         normalized = query.casefold()
         specialty_terms = {
-            "orthopedics": ("knee", "shoulder", "hip", "joint", "bone", "orthopedic"),
+            "orthopedics": (
+                "knee",
+                "shoulder",
+                "hip",
+                "joint",
+                "bone",
+                "leg",
+                "orthopedic",
+            ),
             "cardiology": ("heart", "cardiac", "cardiolog"),
             "neurology": ("neurolog", "migraine", "memory"),
             "ophthalmology": ("eye", "vision", "ophthalmolog"),

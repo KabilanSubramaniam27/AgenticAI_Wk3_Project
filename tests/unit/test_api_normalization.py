@@ -15,3 +15,10 @@ def test_unwrap_record_list_rejects_non_record_values_without_crashing():
     assert unwrap_record_list("not-json") == []
     assert unwrap_record_list({"caseId": "CASE1001"}) == []
     assert unwrap_record_list(["cases", 1, None]) == []
+
+
+def test_unwrap_record_list_can_restore_mcp_singleton_list_result():
+    record = {"caseId": "CASE1001", "status": "open"}
+
+    assert unwrap_record_list(record, allow_singleton=True) == [record]
+    assert unwrap_record_list({"data": record}, allow_singleton=True) == [record]

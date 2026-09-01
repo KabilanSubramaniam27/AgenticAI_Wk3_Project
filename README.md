@@ -91,7 +91,7 @@ Run the MCP server, API, and UI in separate terminals:
 ```bash
 seniorcare-mcp
 seniorcare-api
-streamlit run src/seniorcare_agents/ui/app.py
+seniorcare-ui
 ```
 
 FastAPI exposes member registration/lookup, cases, chat, approvals, rejection, and
@@ -462,7 +462,7 @@ http://127.0.0.1:8000/docs
 Terminal 4 — SeniorCare Streamlit UI
 cd /Users/kabilansubramaniam/Documents/Workspace/AgenticAI_Wk3_Project
 source .venv/bin/activate
-streamlit run src/seniorcare_agents/ui/app.py
+seniorcare-ui
 Open the application:
 open http://127.0.0.1:8501
 Run MCP Inspector
@@ -502,7 +502,7 @@ For normal use after initial setup, these are the essential commands:
 docker compose up -d
 seniorcare-mcp
 seniorcare-api
-streamlit run src/seniorcare_agents/ui/app.py
+seniorcare-ui
 Run the final three commands in separate activated terminals.
 Shutdown
 Stop MCP, API, Streamlit, and Inspector with Ctrl+C in their terminals.

@@ -6,6 +6,9 @@ class OutputGuardrail:
         "real appointment confirmed",
         "doctor was contacted",
         "pharmacy was contacted",
+        "meal provider was contacted",
+        "transportation provider was contacted",
+        "event organizer was contacted",
         "stop taking",
         "change your dose",
     )

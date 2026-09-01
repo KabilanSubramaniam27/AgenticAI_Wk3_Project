@@ -276,7 +276,7 @@ Terminal 4 — Streamlit UI:
 ```bash
 cd /Users/kabilansubramaniam/Documents/Workspace/AgenticAI_Wk3_Project
 source .venv/bin/activate
-streamlit run src/seniorcare_agents/ui/app.py
+seniorcare-ui
 ```
 
 Open the SeniorCare UI:
@@ -288,7 +288,7 @@ open http://127.0.0.1:8501
 The UI calls `http://127.0.0.1:8000` by default. To use another API address:
 
 ```bash
-SENIORCARE_API_URL=http://127.0.0.1:8000 streamlit run src/seniorcare_agents/ui/app.py
+SENIORCARE_API_URL=http://127.0.0.1:8000 seniorcare-ui
 ```
 
 ## 7. Check MCP health with MCP Inspector UI

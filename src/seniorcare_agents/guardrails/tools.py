@@ -4,12 +4,22 @@ from seniorcare_runtime.config import RuntimeSettings
 
 
 class ToolGuardrail:
+    PHASE_ONE_WRITE_ACTIONS = {
+        "book_dummy_appointment",
+        "book_dummy_ride",
+        "request_dummy_home_support",
+    }
+
     def __init__(self, settings: RuntimeSettings, gateway: MCPToolGateway):
         self.settings = settings
         self.mcp = gateway
 
     async def validate(self, action: ProposedAction, approved: bool) -> None:
         self.settings.require_simulation()
+        if action.action_type not in self.PHASE_ONE_WRITE_ACTIONS:
+            raise PermissionError(
+                f"Action {action.action_type!r} is not enabled for Phase 1"
+            )
         if action.requires_approval and not approved:
             raise PermissionError("Human approval is required")
         if not action.simulation:

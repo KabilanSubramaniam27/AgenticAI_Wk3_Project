@@ -201,6 +201,14 @@ class OrchestratorGuardrail:
     ) -> None:
         if not response.answer.strip():
             raise AgentGuardrailError("orchestrator: empty synthesized answer")
+        normalized_answer = response.answer.casefold().replace("_", " ")
+        if re.search(
+            r"\b(?:provide|need|enter|supply)\b.{0,80}\b(?:provider|availability)\s+id\b",
+            normalized_answer,
+        ):
+            raise AgentGuardrailError(
+                "orchestrator: synthesis requested an internal provider/availability ID"
+            )
         if not set(response.completed_agents).issubset(results):
             raise AgentGuardrailError("orchestrator: synthesis references an unknown agent")
         valid_actions = {
@@ -213,3 +221,14 @@ class OrchestratorGuardrail:
         }
         if not set(response.citation_ids).issubset(valid_citations):
             raise AgentGuardrailError("orchestrator: synthesis invented a citation ID")
+        verified_provider_names = {
+            name.casefold()
+            for result in results.values()
+            for name in re.findall(r"\bDr\.\s+[A-Z][A-Za-z'-]+", result.summary)
+        }
+        if verified_provider_names and not any(
+            name in response.answer.casefold() for name in verified_provider_names
+        ):
+            raise AgentGuardrailError(
+                "orchestrator: synthesis discarded every verified provider name"
+            )

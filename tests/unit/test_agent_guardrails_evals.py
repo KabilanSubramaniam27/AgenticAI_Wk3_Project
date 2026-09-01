@@ -18,7 +18,9 @@ from seniorcare_agents.guardrails import (
     AgentGuardrailError,
     OrchestratorGuardrail,
     SpecialistGuardrail,
+    ToolGuardrail,
 )
+from seniorcare_agents.mcp.gateway import MCPToolGateway
 from seniorcare_agents.models import (
     AgentResult,
     ExecutionStage,
@@ -29,6 +31,7 @@ from seniorcare_agents.models import (
     ToolCallRecord,
 )
 from seniorcare_agents.services.session_store import AgentSession, ChatMessage
+from seniorcare_runtime.config import RuntimeSettings
 
 
 def safe_result(agent_name: str = "HealthcareAccessAgent") -> AgentResult:
@@ -91,6 +94,113 @@ def test_named_provider_booking_plan_resolves_name_through_mcp_search():
     assert normalized.missing_information == []
 
 
+def test_healthcare_fallback_plan_retrieves_provider_availability():
+    specialist = LangGraphSpecialist(
+        "healthcare",
+        object(),
+        object(),  # type: ignore[arg-type]
+    )
+    specialist._tools = {  # noqa: SLF001
+        "search_providers": object(),
+        "list_available_slots": object(),
+        "search_healthcare_knowledge": object(),
+    }
+    plan = SpecialistPlan(
+        task_summary="Find an orthopedic doctor",
+        selected_tools=specialist._fallback_tools(),  # noqa: SLF001
+    )
+
+    normalized = specialist._normalize_healthcare_plan(  # noqa: SLF001
+        plan, "Find an orthopedic doctor for knee pain"
+    )
+
+    assert "search_providers" in normalized.selected_tools
+    assert "list_available_slots" in normalized.selected_tools
+    assert normalized.tool_arguments["search_providers"]["specialty"] == "orthopedics"
+
+
+def test_verified_provider_discovery_cannot_be_discarded_by_synthesis():
+    specialist = LangGraphSpecialist(
+        "healthcare",
+        object(),
+        object(),  # type: ignore[arg-type]
+    )
+    result = specialist._provider_discovery_result(  # noqa: SLF001
+        {
+            "search_providers": [
+                {
+                    "providerId": "PRV1003",
+                    "providerName": "Dr. Carter",
+                    "specialty": "Orthopedics",
+                    "facilityName": "Central Virginia Orthopedics Center",
+                    "city": "Henrico",
+                    "state": "VA",
+                    "zipCode": "23229",
+                }
+            ],
+            "list_available_slots": [
+                {
+                    "availabilityId": "AVL1021",
+                    "providerId": "PRV1003",
+                    "availableDate": "2026-09-21",
+                    "availableTime": "10:30",
+                    "status": "available",
+                }
+            ],
+        }
+    )
+
+    assert result.status == "success"
+    assert "Dr. Carter" in result.summary
+    assert "AVL1021" in result.summary
+    assert result.related_entity_ids == ["PRV1003"]
+
+
+def test_explicit_booking_recovers_grounded_proposal_when_llm_omits_it():
+    specialist = LangGraphSpecialist(
+        "healthcare",
+        object(),
+        object(),  # type: ignore[arg-type]
+    )
+    result = specialist._ensure_grounded_appointment_proposal(  # noqa: SLF001
+        AgentResult(
+            agent_name="HealthcareAccessAgent",
+            status="needs_user_input",
+            summary="What type of orthopedic care is needed?",
+        ),
+        {
+            "query": "Please book a doctor appointment for my father's leg pain",
+            "user_id": "SEN1022",
+            "recipient_id": "SEN1022",
+            "case_id": None,
+            "retrieval_results": {
+                "search_providers": [
+                    {
+                        "providerId": "PRV1003",
+                        "providerName": "Dr. Carter",
+                    }
+                ],
+                "list_available_slots": [
+                    {
+                        "availabilityId": "AVL1021",
+                        "providerId": "PRV1003",
+                        "availableDate": "2026-09-21",
+                        "availableTime": "10:30",
+                        "status": "available",
+                    }
+                ],
+            },
+        },
+    )
+
+    assert result.status == "success"
+    assert len(result.proposed_actions) == 1
+    action = result.proposed_actions[0]
+    assert action.parameters["provider_id"] == "PRV1003"
+    assert action.parameters["availability_id"] == "AVL1021"
+    assert action.requires_approval is True
+
+
 def test_provider_name_extraction_is_case_insensitive_and_canonical():
     assert (
         LangGraphSpecialist._provider_name_for_query(  # noqa: SLF001
@@ -98,6 +208,51 @@ def test_provider_name_extraction_is_case_insensitive_and_canonical():
         )
         == "Dr. Carter"
     )
+
+
+def test_provider_name_extraction_ignores_generic_doctor_phrase():
+    assert (
+        LangGraphSpecialist._provider_name_for_query(  # noqa: SLF001
+            "Find an orthopedic doctor for my father's knee pain."
+        )
+        is None
+    )
+
+
+def test_internal_provider_resolution_instructions_are_not_persisted_as_reason():
+    value = (
+        "Book a doctor/provider appointment using the first verified pair. "
+        "Previous request: Find an orthopedic doctor for my father's knee pain.. "
+        "Resolve provider_id and availability_id through MCP records."
+    )
+
+    assert LangGraphSpecialist._user_facing_appointment_reason(value) == (  # noqa: SLF001
+        "Find an orthopedic doctor for my father's knee pain"
+    )
+
+
+def test_mcp_gateway_restores_singleton_list_tool_contracts():
+    appointment = {"appointmentId": "APT1021", "status": "scheduled"}
+
+    assert MCPToolGateway._restore_list_contract(  # noqa: SLF001
+        "list_appointments", appointment
+    ) == [appointment]
+    assert MCPToolGateway._restore_list_contract(  # noqa: SLF001
+        "search_providers", appointment
+    ) == [appointment]
+    assert (
+        MCPToolGateway._restore_list_contract(  # noqa: SLF001
+            "get_member", appointment
+        )
+        == appointment
+    )
+    assert MCPToolGateway._restore_list_contract(  # noqa: SLF001
+        "evaluate_risks", appointment
+    ) == [appointment]
+    assert MCPToolGateway._restore_list_contract(  # noqa: SLF001
+        "list_knowledge_chunk_ids", "CHK1001"
+    ) == ["CHK1001"]
+    assert MCPToolGateway._restore_list_contract("list_cases", None) == []  # noqa: SLF001
     assert (
         LangGraphSpecialist._provider_name_for_query(  # noqa: SLF001
             "Please book with doctor Carter"
@@ -241,6 +396,30 @@ def test_orchestrator_guardrail_rejects_invalid_stages_and_invented_synthesis_id
         guardrail.validate_synthesis(invented, results)
 
 
+def test_orchestrator_guardrail_rejects_internal_id_request_and_lost_provider_fact():
+    guardrail = OrchestratorGuardrail()
+    results = {
+        "healthcare": AgentResult(
+            agent_name="HealthcareAccessAgent",
+            status="success",
+            summary="Dr. Carter has an available orthopedic appointment.",
+        )
+    }
+    asks_for_id = OrchestratorResponse(
+        answer="Please provide the provider ID to continue.",
+        completed_agents=["healthcare"],
+    )
+    with pytest.raises(AgentGuardrailError, match="internal provider"):
+        guardrail.validate_synthesis(asks_for_id, results)
+
+    loses_provider = OrchestratorResponse(
+        answer="I found an available appointment.",
+        completed_agents=["healthcare"],
+    )
+    with pytest.raises(AgentGuardrailError, match="provider name"):
+        guardrail.validate_synthesis(loses_provider, results)
+
+
 @pytest.mark.asyncio
 async def test_orchestrator_llm_plans_agents_and_synthesizes_validated_results():
     class StructuredInvoker:
@@ -378,6 +557,22 @@ def test_ambiguous_appointment_requires_domain_clarification():
     ]
     assert explicit.missing_information == []
 
+
+def test_actionable_doctor_request_does_not_require_type_of_care():
+    plan = OrchestratorPlan(
+        intents=["appointments", "provider_search"],
+        selected_agents=["healthcare"],
+        execution_stages=[ExecutionStage(stage=1, agents=["healthcare"])],
+        missing_information=["What type of orthopedic care does your father need?"],
+        routing_summary={"healthcare": "Find and book an appropriate provider."},
+    )
+
+    corrected = SeniorCareOrchestratorAgent._enforce_provider_search_clarification(
+        "Please book a doctor appointment for my father's leg pain", plan
+    )
+
+    assert corrected.missing_information == []
+
     incorrect_llm_clarification = OrchestratorPlan(
         intents=["appointments", "transportation"],
         selected_agents=["healthcare", "transportation"],
@@ -507,6 +702,57 @@ def test_code_evaluator_scores_safe_contract_and_rejects_write():
     unsafe.tool_calls.append(ToolCallRecord(tool="write", operation="write", status="success"))
     failed = evaluator.evaluate(unsafe, expected_agent="HealthcareAccessAgent")
     assert not failed.passed and "no_llm_writes" in failed.failures
+
+
+def test_code_evaluator_rejects_actions_outside_domain_policy():
+    evaluator = CodeBasedAgentEvaluator()
+    result = safe_result("MealsFoodAgent")
+    result.proposed_actions.append(
+        ProposedAction(
+            action_id="ACT-FORBIDDEN-MEAL",
+            action_type="enroll_dummy_meal_service",
+            description="Forbidden Phase 1 meal enrollment",
+            parameters={"senior_id": "SEN1001", "recipient_id": "SEN1001"},
+            agent_name="MealsFoodAgent",
+            user_id="SEN1001",
+            senior_id="SEN1001",
+            recipient_id="SEN1001",
+        )
+    )
+
+    evaluation = evaluator.evaluate(
+        result,
+        expected_agent="MealsFoodAgent",
+        allowed_action_types=set(),
+    )
+
+    assert not evaluation.passed
+    assert "actions_allowlisted" in evaluation.failures
+
+
+@pytest.mark.asyncio
+async def test_tool_guardrail_rejects_removed_phase_one_write_before_mcp_call(tmp_path: Path):
+    class GatewayThatMustNotRun:
+        async def call(self, *_args, **_kwargs):
+            raise AssertionError("MCP must not be called for a removed action")
+
+    guardrail = ToolGuardrail(
+        RuntimeSettings(project_root=tmp_path),
+        GatewayThatMustNotRun(),  # type: ignore[arg-type]
+    )
+    action = ProposedAction(
+        action_id="ACT-REMOVED-WRITE",
+        action_type="request_dummy_refill",
+        description="Removed Phase 1 write",
+        parameters={"senior_id": "SEN1001", "recipient_id": "SEN1001"},
+        agent_name="MedicationPharmacyAgent",
+        user_id="SEN1001",
+        senior_id="SEN1001",
+        recipient_id="SEN1001",
+    )
+
+    with pytest.raises(PermissionError, match="not enabled for Phase 1"):
+        await guardrail.validate(action, approved=True)
 
 
 def test_human_eval_packet_and_summary(tmp_path: Path):
@@ -908,17 +1154,36 @@ def test_implicit_booking_followup_uses_only_provider_in_preceding_result():
     assert "doctor/provider appointment with Dr. Carter" in contextual
 
 
-def test_booking_followup_does_not_choose_between_multiple_providers():
+def test_booking_followup_reuses_prior_request_without_asking_for_internal_ids():
     session = AgentSession(session_id="SESSION-4", user_id="SEN1001")
-    session.messages.append(
-        ChatMessage(
-            role="assistant",
-            content="I found Dr. Carter and Dr. Morris with available appointments.",
-        )
+    session.messages.extend(
+        [
+            ChatMessage(
+                role="user",
+                content="Find an orthopedic doctor for my father's knee pain.",
+            ),
+            ChatMessage(
+                role="assistant",
+                content="I found Dr. Carter and Dr. Morris with available appointments.",
+            ),
+        ]
     )
     query = "Please book the appointment"
 
-    assert contextualize_followup(query, session) == query
+    contextual = contextualize_followup(query, session)
+
+    assert "first verified available provider-slot pair" in contextual
+    assert "knee pain" in contextual
+    assert "must never be requested from the user" in contextual
+
+
+def test_specialist_recognizes_internal_id_requests_inside_questions():
+    assert LangGraphSpecialist._mentions_system_field(  # noqa: SLF001
+        "Please provide the provider ID of the doctor you want."
+    )
+    assert LangGraphSpecialist._mentions_system_field(  # noqa: SLF001
+        "availability_id is required"
+    )
 
 
 def test_doctor_appointment_clarification_answer_recovers_prior_provider():

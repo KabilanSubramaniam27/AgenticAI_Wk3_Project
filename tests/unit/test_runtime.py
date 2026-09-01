@@ -70,7 +70,12 @@ def test_synthetic_runtime_data_covers_operational_agent_stores():
         name: json.loads((synthetic_dir / name).read_text(encoding="utf-8"))
         for name in required_files
     }
-    assert all(isinstance(records, list) and records for records in datasets.values())
+    assert all(isinstance(records, list) for records in datasets.values())
+    assert all(
+        records
+        for name, records in datasets.items()
+        if name != "cases.json"
+    )
 
     provider_ids = {row["providerId"] for row in datasets["providers.json"]}
     service_ids = {

@@ -65,9 +65,17 @@ DO:
   select TransportationAgent only unless the user explicitly asks to cancel, reschedule, or modify it.
 - Ask one concise clarification in missing_information when the domain, recipient, appointment ID,
   or another required choice is genuinely ambiguous.
+- Never ask the user for provider_id, availability_id, service_id, vehicle_id, or another internal
+  repository identifier. Specialists resolve internal identifiers through MCP reads. If the user
+  says "any doctor," choose the first verified available provider-slot pair through healthcare
+  retrieval and present it for approval.
 - Route broad provider-directory questions to HealthcareAccessAgent even when no specialty is
   supplied. The healthcare specialist can list matching providers and offer optional filtering;
   do not require a provider type before performing that search.
+- A request to find or book a doctor for a described symptom such as knee, shoulder, hip, leg, or
+  eye pain is actionable provider discovery. Do not ask what "type of care" is needed and do not
+  require a county or preference before retrieving the available local providers. The healthcare
+  specialist will map the request to an appropriate provider category and verified slots.
 - Route a request for official information, FDA reference data, safety information, or guidance
   about a specifically named drug to MedicationPharmacyAgent, even when the word "medication" is
   absent. Example: "Find official information about lisinopril" is medication reference, not
@@ -352,14 +360,33 @@ class SeniorCareOrchestratorAgent:
         lower = query.casefold()
         broad_search = (
             any(term in lower for term in ("provider", "doctor", "physician"))
-            and any(term in lower for term in ("available", "find", "near", "list", "what"))
+            and any(
+                term in lower
+                for term in ("available", "find", "near", "list", "what", "book", "schedule")
+            )
             and "healthcare" in plan.selected_agents
         )
         if broad_search:
             plan.missing_information = [
                 value
                 for value in plan.missing_information
-                if not any(term in value.casefold() for term in ("provider type", "specialty"))
+                if not any(
+                    term in value.casefold()
+                    for term in (
+                        "provider id",
+                        "provider_id",
+                        "availability id",
+                        "availability_id",
+                        "provider type",
+                        "specialty",
+                        "type of orthopedic care",
+                        "type of care",
+                        "specific preference",
+                        "additional information",
+                        "which county",
+                        "county name",
+                    )
+                )
             ]
         return plan
 

@@ -10,6 +10,7 @@ from seniorcare_agents.agents.llm_specialist import (
     DOMAIN_INSTRUCTIONS,
     DOMAIN_PLANNING_INSTRUCTIONS,
     SPECIALIST_PLANNING_PROMPT,
+    WRITE_ACTIONS,
     LangGraphSpecialist,
 )
 from seniorcare_agents.agents.llm_specialist import (
@@ -59,6 +60,21 @@ class InProcessTestGateway(MCPToolGateway):
 
     async def list_tool_names(self) -> list[str]:
         return [tool.name for tool in await self.test_server.list_tools()]
+
+
+@pytest.mark.asyncio
+async def test_mcp_surface_matches_phase_one_write_policies(tmp_path: Path):
+    names = set(await make_test_gateway(settings_with_data(tmp_path)).list_tool_names())
+    exposed_agent_writes = set().union(*WRITE_ACTIONS.values())
+    assert exposed_agent_writes <= names
+    assert {
+        "request_dummy_refill",
+        "enroll_dummy_meal_service",
+        "register_dummy_event",
+        "schedule_dummy_reminder",
+        "modify_dummy_ride",
+        "cancel_dummy_ride",
+    }.isdisjoint(names)
 
 
 def make_test_gateway(settings: RuntimeSettings) -> InProcessTestGateway:
@@ -155,6 +171,24 @@ def test_informational_requests_do_not_authorize_specialist_writes():
     assert (
         "never infer, rank, or list drugs based on symptoms"
         in DOMAIN_INSTRUCTIONS["medication"].casefold()
+    )
+
+
+def test_transport_followup_retains_booking_intent_from_recent_user_turn():
+    transportation = object.__new__(LangGraphSpecialist)
+    transportation.key = "transportation"
+    history = [
+        {"role": "user", "content": "I need transportation for this appointment"},
+        {"role": "assistant", "content": "What is the pickup address?"},
+        {"role": "user", "content": "Pickup is 7743 Halifax Drive"},
+        {"role": "assistant", "content": "Is wheelchair assistance required?"},
+    ]
+
+    assert transportation._explicit_write_context(  # noqa: SLF001
+        "Wheelchair assistance required = yes", history
+    )
+    assert not transportation._explicit_write_context(  # noqa: SLF001
+        "Are wheelchair rides available?", []
     )
 
 

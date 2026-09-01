@@ -72,6 +72,7 @@ class MCPToolGateway:
                     ) from exc
                 await asyncio.sleep(self.retry_base_seconds * (2 ** (attempt - 1)))
         decoded = self._decode_text_blocks(result)
+        decoded = self._restore_list_contract(tool_name, decoded)
         flow_event(
             "mcp_tool",
             tool_name,
@@ -81,6 +82,19 @@ class MCPToolGateway:
             duration_ms=(time.perf_counter() - started) * 1000,
         )
         return decoded
+
+    @staticmethod
+    def _restore_list_contract(tool_name: str, value: Any) -> Any:
+        """Restore list-valued MCP results collapsed to one item by adapters."""
+        returns_list = tool_name.startswith(("list_", "search_")) or tool_name in {
+            "evaluate_risks",
+            "get_case_related_records",
+        }
+        if not returns_list:
+            return value
+        if value is None:
+            return []
+        return value if isinstance(value, list) else [value]
 
     @staticmethod
     def _decode_text_blocks(result: Any) -> Any:

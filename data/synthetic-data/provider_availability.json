@@ -24,7 +24,7 @@
     "availableTime": "11:30",
     "durationMinutes": 60,
     "appointmentType": "new_patient",
-    "status": "available"
+    "status": "booked"
   },
   {
     "availabilityId": "AVL1004",
@@ -186,6 +186,6 @@
     "availableTime": "10:30",
     "durationMinutes": 45,
     "appointmentType": "new_patient",
-    "status": "booked"
+    "status": "available"
   }
 ]

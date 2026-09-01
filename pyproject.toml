@@ -23,6 +23,7 @@ seniorcare-ingest = "seniorcare_ingestion.cli:app"
 seniorcare-api = "seniorcare_agents.api.app:run"
 seniorcare-eval = "seniorcare_agents.evals.runner:main"
 seniorcare-mcp = "seniorcare_agents.mcp.cli:run"
+seniorcare-ui = "seniorcare_agents.ui.cli:run"
 
 [build-system]
 requires = ["setuptools>=72"]
